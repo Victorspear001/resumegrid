@@ -213,10 +213,10 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-20 relative">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center text-white font-bold">
-          RG
+        <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center text-white text-lg shadow-sm">
+          🔪🖊️
         </div>
-        <h1 className="font-semibold text-gray-900">ResumeGrid</h1>
+        <h1 className="font-semibold text-gray-900 tracking-tight">Resume Kill</h1>
       </div>
 
       <div className="flex items-center gap-3">
