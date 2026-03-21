@@ -48,6 +48,26 @@ async function startServer() {
     }
   });
 
+  app.post("/api/save-logo", async (req, res) => {
+    try {
+      const { base64Data } = req.body;
+      if (!base64Data) {
+        return res.status(400).json({ error: "No base64Data provided" });
+      }
+      const fs = await import("fs");
+      const buffer = Buffer.from(base64Data, 'base64');
+      const publicDir = path.join(process.cwd(), 'public');
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir);
+      }
+      fs.writeFileSync(path.join(publicDir, 'logo.png'), buffer);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Save Logo Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get all resumes
   app.get("/api/resumes", async (req, res) => {
     try {

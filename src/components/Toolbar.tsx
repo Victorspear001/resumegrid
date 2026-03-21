@@ -92,6 +92,67 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     }
   };
 
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Check if logo exists
+    fetch('/logo.png', { method: 'HEAD' })
+      .then(res => {
+        if (res.ok) setLogoUrl('/logo.png');
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleGenerateLogo = async () => {
+    try {
+      setIsLoading(true);
+      const { GoogleGenAI } = await import('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: {
+          parts: [
+            {
+              text: 'A minimalist, modern app logo featuring a hybrid of a fountain pen and a sharp knife. Flat vector design, bold red and dark grey colors, solid white background, clean lines, professional, icon.',
+            },
+          ],
+        },
+        config: {
+          imageConfig: {
+            aspectRatio: "1:1",
+          }
+        }
+      });
+
+      for (const part of response.candidates?.[0]?.content?.parts || []) {
+        if (part.inlineData) {
+          const base64Data = part.inlineData.data;
+          
+          // Save to backend
+          const saveRes = await fetch('/api/save-logo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ base64Data })
+          });
+          
+          if (saveRes.ok) {
+            setLogoUrl(`/logo.png?t=${Date.now()}`); // Cache bust
+          } else {
+            // Fallback to data URL if save fails
+            setLogoUrl(`data:image/png;base64,${base64Data}`);
+          }
+          break;
+        }
+      }
+    } catch (error: any) {
+      console.error('Error generating logo:', error);
+      alert(`Failed to generate logo: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleCloudMenuToggle = () => {
     if (!showCloudMenu) {
       fetchSavedResumes();
@@ -213,13 +274,27 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-20 relative">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center text-white text-lg shadow-sm">
-          🔪🖊️
-        </div>
+        {logoUrl ? (
+          <img src={logoUrl} alt="Resume Kill Logo" className="w-8 h-8 rounded-md object-cover shadow-sm" />
+        ) : (
+          <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center text-white text-lg shadow-sm">
+            🔪🖊️
+          </div>
+        )}
         <h1 className="font-semibold text-gray-900 tracking-tight">Resume Kill</h1>
       </div>
 
       <div className="flex items-center gap-3">
+        <button 
+          onClick={handleGenerateLogo}
+          disabled={isLoading}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors border border-red-200"
+          title="Generate Logo"
+        >
+          <ImageIcon size={16} />
+          <span className="hidden sm:inline">{isLoading ? 'Generating...' : 'Generate Logo'}</span>
+        </button>
+
         <button 
           onClick={() => setIsDistractionFree(!isDistractionFree)}
           className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
