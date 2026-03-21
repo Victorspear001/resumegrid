@@ -1,10 +1,9 @@
-import { Plus, Trash2, GripVertical, Wand2, Loader2 } from 'lucide-react';
-import React, { useState } from 'react';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
+import React from 'react';
 import { useResumeStore } from '../../store/useResumeStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { generateProjectDescription } from '../../services/aiService';
 
 const SortableProjectItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -33,7 +32,6 @@ const SortableProjectItem: React.FC<{ id: string; children: React.ReactNode }> =
 export function ProjectsForm() {
   const { data, addProject, updateProject, removeProject, reorderProjects } = useResumeStore();
   const { projects } = data;
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -83,29 +81,6 @@ export function ProjectsForm() {
   const handleTechChange = (projId: string, value: string) => {
     const techArray = value.split(',').map(s => s.trim()).filter(Boolean);
     updateProject(projId, { technologies: techArray });
-  };
-
-  const handleGenerateHighlights = async (projId: string, name: string, technologies: string[]) => {
-    if (!name) {
-      alert("Please enter a Project Name first.");
-      return;
-    }
-
-    setGeneratingId(projId);
-    try {
-      const generatedText = await generateProjectDescription(name, technologies.join(', '));
-      // Split by newlines and clean up bullets
-      const bullets = generatedText
-        .split('\n')
-        .map(line => line.replace(/^-\s*/, '').trim())
-        .filter(line => line.length > 0);
-      
-      updateProject(projId, { highlights: bullets });
-    } catch (error) {
-      alert("Failed to generate highlights. Please try again.");
-    } finally {
-      setGeneratingId(null);
-    }
   };
 
   return (
@@ -179,15 +154,6 @@ export function ProjectsForm() {
                   <div className="sm:col-span-2 space-y-3 mt-2">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-medium text-gray-700">Highlights (Bullet Points)</label>
-                      <button
-                        type="button"
-                        onClick={() => handleGenerateHighlights(proj.id, proj.name, proj.technologies)}
-                        disabled={generatingId === proj.id}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {generatingId === proj.id ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
-                        {generatingId === proj.id ? 'Generating...' : 'Generate with AI'}
-                      </button>
                     </div>
                     {proj.highlights.map((bullet, i) => (
                       <div key={i} className="flex gap-2 items-start">

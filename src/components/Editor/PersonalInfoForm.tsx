@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useResumeStore } from '../../store/useResumeStore';
-import { User, Upload, Trash2, Wand2, Loader2 } from 'lucide-react';
-import { generateProfessionalSummary } from '../../services/aiService';
+import { User, Upload, Trash2 } from 'lucide-react';
 
 export function PersonalInfoForm() {
   const { data, updatePersonalInfo } = useResumeStore();
-  const { personalInfo, skills } = data;
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { personalInfo } = data;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -26,24 +24,6 @@ export function PersonalInfoForm() {
 
   const removeImage = () => {
     updatePersonalInfo({ profilePicture: '' });
-  };
-
-  const handleGenerateSummary = async () => {
-    if (!personalInfo.jobTitle) {
-      alert("Please enter a Job Title first to generate a summary.");
-      return;
-    }
-    
-    setIsGenerating(true);
-    try {
-      const skillNames = skills.map(s => s.name);
-      const generatedSummary = await generateProfessionalSummary(personalInfo.jobTitle, skillNames);
-      updatePersonalInfo({ summary: generatedSummary });
-    } catch (error) {
-      alert("Failed to generate summary. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const careers = [
@@ -230,15 +210,6 @@ export function PersonalInfoForm() {
         <div className="space-y-1 sm:col-span-2">
           <div className="flex justify-between items-center">
             <label htmlFor="summary" className="text-sm font-medium text-gray-700">Professional Summary</label>
-            <button
-              type="button"
-              onClick={handleGenerateSummary}
-              disabled={isGenerating}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
-              {isGenerating ? 'Generating...' : 'Generate with AI'}
-            </button>
           </div>
           <textarea
             id="summary"

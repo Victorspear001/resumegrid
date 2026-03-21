@@ -1,10 +1,9 @@
-import { Plus, Trash2, GripVertical, Wand2, Loader2 } from 'lucide-react';
-import React, { useState } from 'react';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
+import React from 'react';
 import { useResumeStore } from '../../store/useResumeStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { generateExperienceDescription } from '../../services/aiService';
 
 const SortableExperienceItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -33,7 +32,6 @@ const SortableExperienceItem: React.FC<{ id: string; children: React.ReactNode }
 export function ExperienceForm() {
   const { data, addExperience, updateExperience, removeExperience, reorderExperience } = useResumeStore();
   const { experience } = data;
-  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -78,29 +76,6 @@ export function ExperienceForm() {
     
     const newDesc = exp.description.filter((_, i) => i !== index);
     updateExperience(expId, { description: newDesc });
-  };
-
-  const handleGenerateDescription = async (expId: string, position: string, company: string) => {
-    if (!position || !company) {
-      alert("Please enter both Company and Position first.");
-      return;
-    }
-
-    setGeneratingId(expId);
-    try {
-      const generatedText = await generateExperienceDescription(position, company);
-      // Split by newlines and clean up bullets
-      const bullets = generatedText
-        .split('\n')
-        .map(line => line.replace(/^-\s*/, '').trim())
-        .filter(line => line.length > 0);
-      
-      updateExperience(expId, { description: bullets });
-    } catch (error) {
-      alert("Failed to generate description. Please try again.");
-    } finally {
-      setGeneratingId(null);
-    }
   };
 
   return (
@@ -197,15 +172,6 @@ export function ExperienceForm() {
                   <div className="sm:col-span-2 space-y-3 mt-2">
                     <div className="flex justify-between items-center">
                       <label className="text-sm font-medium text-gray-700">Description (Bullet Points)</label>
-                      <button
-                        type="button"
-                        onClick={() => handleGenerateDescription(exp.id, exp.position, exp.company)}
-                        disabled={generatingId === exp.id}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {generatingId === exp.id ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />}
-                        {generatingId === exp.id ? 'Generating...' : 'Generate with AI'}
-                      </button>
                     </div>
                     {exp.description.map((bullet, i) => (
                       <div key={i} className="flex gap-2 items-start">
