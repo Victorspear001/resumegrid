@@ -56,6 +56,8 @@ export interface ResumeTheme {
   headingFontFamily: string;
   spacing: 'compact' | 'normal' | 'spacious';
   template: 'minimal' | 'executive' | 'creative';
+  margin: number; // in mm
+  lineHeight: number; // multiplier
 }
 
 export interface ResumeData {

@@ -38,7 +38,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         const bottom = top + height;
 
         const pageNumber = Math.floor(top / pageHeightPx);
-        const paddingPx = container.offsetWidth * (12 / 210); 
+        const paddingPx = container.offsetWidth * (theme.margin / 210); 
         
         // The safe bottom limit for the current page (page height - bottom padding)
         const safeBottom = (pageNumber * pageHeightPx) + (pageHeightPx - paddingPx);
@@ -61,7 +61,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
     const timeoutId = setTimeout(paginate, 100);
     return () => clearTimeout(timeoutId);
-  }, [data, theme]);
+  }, [data, theme.margin, theme.spacing, theme.template, theme.lineHeight]);
 
   // Spacing classes based on theme
   const spacingClasses = {
@@ -382,7 +382,8 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         <div 
           className="w-full origin-top-left"
           style={{ 
-            padding: '12mm',
+            padding: `${theme.margin}mm`,
+            lineHeight: theme.lineHeight,
           }}
         >
           {renderHeader()}

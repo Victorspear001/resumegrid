@@ -78,7 +78,9 @@ export function ThemeSettings() {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-gray-700">Heading Font</label>
+          <label className="text-sm font-medium text-gray-700 flex justify-between">
+            <span>Heading Font</span>
+          </label>
           <select
             value={theme.headingFontFamily}
             onChange={(e) => updateTheme({ headingFontFamily: e.target.value })}
@@ -88,6 +90,38 @@ export function ThemeSettings() {
               <option key={font.value} value={font.value}>{font.name}</option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700 flex justify-between">
+            <span>Margin (mm)</span>
+            <span className="text-blue-600">{theme.margin}mm</span>
+          </label>
+          <input
+            type="range"
+            min="4"
+            max="40"
+            step="1"
+            value={theme.margin}
+            onChange={(e) => updateTheme({ margin: parseInt(e.target.value) })}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          />
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-700 flex justify-between">
+            <span>Line Height</span>
+            <span className="text-blue-600">{theme.lineHeight}</span>
+          </label>
+          <input
+            type="range"
+            min="1"
+            max="2"
+            step="0.1"
+            value={theme.lineHeight}
+            onChange={(e) => updateTheme({ lineHeight: parseFloat(e.target.value) })}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          />
         </div>
       </div>
     </section>
