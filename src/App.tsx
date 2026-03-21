@@ -1,10 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
 
 export default function App() {
   const [isDistractionFree, setIsDistractionFree] = useState(false);
+
+  useEffect(() => {
+    // Initialize the database table if it doesn't exist
+    fetch('/api/init-db', { method: 'POST' }).catch(console.error);
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden font-sans">

@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { ResumeData, Experience, Education, Project, SkillCategory, SectionType, ResumeTheme } from '../types/resume';
 
 interface ResumeState {
+  resumeId: string;
   data: ResumeData;
+  setResumeId: (id: string) => void;
   updatePersonalInfo: (data: Partial<ResumeData['personalInfo']>) => void;
   
   // Experience
@@ -129,8 +131,11 @@ const initialData: ResumeData = {
 };
 
 export const useResumeStore = create<ResumeState>((set) => ({
+  resumeId: uuidv4(),
   data: initialData,
   
+  setResumeId: (id) => set({ resumeId: id }),
+
   updatePersonalInfo: (info) => set((state) => ({
     data: { ...state.data, personalInfo: { ...state.data.personalInfo, ...info } }
   })),

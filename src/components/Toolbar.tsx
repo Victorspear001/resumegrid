@@ -1,4 +1,4 @@
-import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon } from 'lucide-react';
+import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Cloud, UploadCloud, DownloadCloud } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
 import { toJpeg } from 'html-to-image';
@@ -10,11 +10,17 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProps) {
-  const { data, updateTheme } = useResumeStore();
+  const { resumeId, data, updateTheme, loadData, setResumeId } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [showCloudMenu, setShowCloudMenu] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [savedResumes, setSavedResumes] = useState<any[]>([]);
+  
   const templatesRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
+  const cloudMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -24,10 +30,74 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
         setShowDownloadMenu(false);
       }
+      if (cloudMenuRef.current && !cloudMenuRef.current.contains(event.target as Node)) {
+        setShowCloudMenu(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const fetchSavedResumes = async () => {
+    try {
+      const res = await fetch('/api/resumes');
+      if (res.ok) {
+        const list = await res.json();
+        setSavedResumes(list);
+      }
+    } catch (err) {
+      console.error("Failed to fetch resumes", err);
+    }
+  };
+
+  const handleSaveToCloud = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch('/api/resumes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: resumeId,
+          title: data.personalInfo.fullName || 'Untitled Resume',
+          data: data
+        })
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      alert('Resume saved to cloud successfully!');
+      fetchSavedResumes();
+    } catch (error: any) {
+      console.error('Save error:', error);
+      alert(`Error saving to cloud: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+      setShowCloudMenu(false);
+    }
+  };
+
+  const handleLoadFromCloud = async (id: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/resumes/${id}`);
+      if (!res.ok) throw new Error('Failed to load');
+      const result = await res.json();
+      const parsedData = JSON.parse(result.data);
+      loadData(parsedData);
+      setResumeId(id);
+      setShowCloudMenu(false);
+    } catch (error: any) {
+      console.error('Load error:', error);
+      alert(`Error loading from cloud: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCloudMenuToggle = () => {
+    if (!showCloudMenu) {
+      fetchSavedResumes();
+    }
+    setShowCloudMenu(!showCloudMenu);
+  };
 
   const generateImage = async () => {
     const element = document.getElementById('resume-preview-template');
@@ -41,12 +111,20 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     const originalInnerTransform = innerDiv ? innerDiv.style.transform : '';
     const originalInnerWidth = innerDiv ? innerDiv.style.width : '';
     
+    const originalBackgroundImage = element.style.backgroundImage;
+    const originalBackgroundSize = element.style.backgroundSize;
+    const originalBoxShadow = element.style.boxShadow;
+
     // Apply unscaled styles to real DOM temporarily
     if (parent) parent.style.transform = 'scale(1)';
     if (innerDiv) {
       innerDiv.style.transform = 'scale(1)';
       innerDiv.style.width = '100%';
     }
+    
+    element.style.backgroundImage = 'none';
+    element.style.backgroundSize = 'auto';
+    element.style.boxShadow = 'none';
 
     // Wait for DOM to repaint
     await new Promise(resolve => setTimeout(resolve, 150));
@@ -70,6 +148,9 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
         innerDiv.style.transform = originalInnerTransform;
         innerDiv.style.width = originalInnerWidth;
       }
+      element.style.backgroundImage = originalBackgroundImage;
+      element.style.backgroundSize = originalBackgroundSize;
+      element.style.boxShadow = originalBoxShadow;
     }
   };
 
@@ -85,9 +166,22 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const pdfHeight = (height * pdfWidth) / width;
       
-      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      let position = 0;
+      let heightLeft = pdfHeight;
+      
+      pdf.addImage(dataUrl, 'JPEG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft > 1) { // 1mm tolerance to prevent blank pages
+        position = position - pageHeight;
+        pdf.addPage();
+        pdf.addImage(dataUrl, 'JPEG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+      
       pdf.save(`${data.personalInfo.fullName || 'Resume'}.pdf`);
     } catch (error: any) {
       console.error('Error generating PDF:', error);
@@ -187,6 +281,55 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
           <Settings size={16} />
           <span className="hidden sm:inline">Design</span>
         </button>
+
+        <div className="relative" ref={cloudMenuRef}>
+          <button 
+            onClick={handleCloudMenuToggle}
+            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${showCloudMenu ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
+          >
+            <Cloud size={16} />
+            <span className="hidden sm:inline">Cloud</span>
+            <ChevronDown size={14} className={`transition-transform ${showCloudMenu ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showCloudMenu && (
+            <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+              <div className="p-2 border-b border-gray-100">
+                <button
+                  onClick={handleSaveToCloud}
+                  disabled={isSaving}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors font-medium disabled:opacity-50"
+                >
+                  <UploadCloud size={16} />
+                  <span>{isSaving ? 'Saving...' : 'Save to Cloud'}</span>
+                </button>
+              </div>
+              <div className="p-2 max-h-60 overflow-y-auto">
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2 mt-1">
+                  Saved Resumes
+                </div>
+                {savedResumes.length === 0 ? (
+                  <div className="text-sm text-gray-500 px-3 py-2 italic">No saved resumes found.</div>
+                ) : (
+                  savedResumes.map((resume) => (
+                    <button
+                      key={resume.id}
+                      onClick={() => handleLoadFromCloud(resume.id)}
+                      disabled={isLoading}
+                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
+                    >
+                      <DownloadCloud size={14} className="text-gray-400 shrink-0" />
+                      <div className="truncate">
+                        <div className="font-medium truncate">{resume.title}</div>
+                        <div className="text-xs text-gray-400">{new Date(resume.updated_at).toLocaleDateString()}</div>
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="relative" ref={downloadMenuRef}>
           <button 

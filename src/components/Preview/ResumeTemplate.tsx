@@ -1,53 +1,67 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect } from 'react';
 import { useResumeStore } from '../../store/useResumeStore';
 import { cn } from '../../lib/utils';
 import { SectionType } from '../../types/resume';
-import { AlertTriangle } from 'lucide-react';
 
 export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
   const { data } = useResumeStore();
   const { personalInfo, experience, education, skills, projects, sectionOrder, theme } = data;
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [isOverflowing, setIsOverflowing] = useState(false);
-  const [scaleFactor, setScaleFactor] = useState(1);
 
-  // Check for overflow and auto-scale
+  // Pagination logic to perfectly align content across multiple pages
   useEffect(() => {
-    const checkOverflow = () => {
-      if (contentRef.current) {
-        // Reset scale first to measure natural height
-        contentRef.current.style.transform = 'scale(1)';
-        
-        const contentHeight = contentRef.current.scrollHeight;
-        const targetHeight = 1120; // ~A4 height in pixels at 96dpi minus some safe margin
-        
-        if (contentHeight > targetHeight) {
-          // Calculate required scale, minimum 0.8
-          const requiredScale = Math.max(0.8, targetHeight / contentHeight);
-          setScaleFactor(requiredScale);
-          
-          // If even at min scale it overflows, show warning
-          if (requiredScale <= 0.8 && contentHeight * 0.8 > targetHeight) {
-            setIsOverflowing(true);
-          } else {
-            setIsOverflowing(false);
-          }
-        } else {
-          setScaleFactor(1);
-          setIsOverflowing(false);
+    const container = document.getElementById('resume-preview-template');
+    if (!container) return;
+
+    const paginate = () => {
+      // Remove old spacers
+      const oldSpacers = container.querySelectorAll('.page-break-spacer');
+      oldSpacers.forEach(spacer => spacer.remove());
+
+      const elements = container.querySelectorAll('.break-inside-avoid');
+      
+      // Calculate A4 page height in pixels based on current container width
+      const pageHeightPx = container.offsetWidth * (297 / 210);
+      
+      const getOffsetTop = (element: HTMLElement): number => {
+        let offsetTop = 0;
+        let current: HTMLElement | null = element;
+        while (current && current !== container) {
+          offsetTop += current.offsetTop;
+          current = current.offsetParent as HTMLElement;
         }
-      }
+        return offsetTop;
+      };
+
+      elements.forEach((el: any) => {
+        const top = getOffsetTop(el);
+        const height = el.offsetHeight;
+        const bottom = top + height;
+
+        const pageNumber = Math.floor(top / pageHeightPx);
+        const paddingPx = container.offsetWidth * (20 / 210); 
+        
+        // The safe bottom limit for the current page (page height - bottom padding)
+        const safeBottom = (pageNumber * pageHeightPx) + (pageHeightPx - paddingPx);
+
+        // If element crosses the safe bottom boundary and fits on a single page
+        if (bottom > safeBottom && height < (pageHeightPx - 2 * paddingPx)) {
+          const nextPageTop = (pageNumber + 1) * pageHeightPx;
+          // Calculate push amount to move element to the next page with top padding
+          const pushAmount = nextPageTop - top + paddingPx;
+          
+          const spacer = document.createElement('div');
+          spacer.className = 'page-break-spacer';
+          spacer.style.height = `${pushAmount}px`;
+          spacer.style.width = '100%';
+          
+          el.parentNode.insertBefore(spacer, el);
+        }
+      });
     };
 
-    checkOverflow();
-    const timeout = setTimeout(checkOverflow, 100);
-    
-    window.addEventListener('resize', checkOverflow);
-    return () => {
-      clearTimeout(timeout);
-      window.removeEventListener('resize', checkOverflow);
-    };
-  }, [data]);
+    const timeoutId = setTimeout(paginate, 100);
+    return () => clearTimeout(timeoutId);
+  }, [data, theme]);
 
   // Spacing classes based on theme
   const spacingClasses = {
@@ -63,7 +77,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (theme.template === 'executive') {
       return (
         <h2 
-          className="text-lg font-bold uppercase tracking-wider mb-2 pb-1 border-b-2"
+          className="text-lg font-bold uppercase tracking-wider mb-2 pb-1 border-b-2 break-inside-avoid"
           style={{ color: '#1f2937', borderColor: theme.accentColor, fontFamily: theme.headingFontFamily }}
         >
           {title}
@@ -73,7 +87,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     
     if (theme.template === 'creative') {
       return (
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-2 break-inside-avoid">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.accentColor }}></div>
           <h2 
             className="text-xl font-bold tracking-wide"
@@ -88,7 +102,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     // Minimal (default)
     return (
       <h2 
-        className="text-lg font-bold uppercase tracking-wider border-b pb-1 mb-2"
+        className="text-lg font-bold uppercase tracking-wider border-b pb-1 mb-2 break-inside-avoid"
         style={{ color: theme.accentColor, borderColor: `${theme.accentColor}40`, fontFamily: theme.headingFontFamily }}
       >
         {title}
@@ -105,7 +119,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             {renderSectionHeader('Experience')}
             <div className={cn("flex flex-col", itemSpacing)}>
               {experience.map((exp) => (
-                <div key={exp.id}>
+                <div key={exp.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-bold text-gray-900">{exp.position}</h3>
                     <span className="text-sm font-medium text-gray-600 shrink-0 ml-4">
@@ -134,7 +148,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             {renderSectionHeader('Education')}
             <div className={cn("flex flex-col", itemSpacing)}>
               {education.map((edu) => (
-                <div key={edu.id}>
+                <div key={edu.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <h3 className="font-bold text-gray-900">{edu.institution}</h3>
                     <span className="text-sm font-medium text-gray-600 shrink-0 ml-4">
@@ -159,7 +173,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             {renderSectionHeader('Skills')}
             <div className="grid grid-cols-1 gap-1.5 text-sm">
               {skills.map((category) => (
-                <div key={category.id} className="flex items-start">
+                <div key={category.id} className="flex items-start break-inside-avoid">
                   <span className="font-bold text-gray-900 w-32 shrink-0">{category.name}:</span>
                   <span className="text-gray-800 leading-snug">{category.skills.join(', ')}</span>
                 </div>
@@ -175,7 +189,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             {renderSectionHeader('Projects')}
             <div className={cn("flex flex-col", itemSpacing)}>
               {projects.map((proj) => (
-                <div key={proj.id}>
+                <div key={proj.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-gray-900">{proj.name}</h3>
@@ -211,9 +225,9 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
   const renderHeader = () => {
     if (theme.template === 'executive') {
       return (
-        <header className="mb-6 border-b-4 pb-4" style={{ borderColor: theme.accentColor }}>
-          <div className="flex justify-between items-center gap-6">
-            <div className="flex items-center gap-6">
+        <header className="mb-6 border-b-4 pb-4 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
+          <div className="flex justify-between items-start gap-6">
+            <div className="flex items-start gap-6 flex-1 min-w-0">
               {personalInfo.profilePicture && (
                 <img 
                   src={personalInfo.profilePicture} 
@@ -221,21 +235,21 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                   className="w-auto h-24 rounded-md object-contain shrink-0 border border-gray-200 shadow-sm" 
                 />
               )}
-              <div>
+              <div className="flex-1 min-w-0 pt-1">
                 <h1 
-                  className="text-4xl font-bold text-gray-900 mb-1 tracking-tight uppercase"
+                  className="text-4xl font-bold text-gray-900 mb-1 tracking-tight uppercase break-words leading-tight"
                   style={{ fontFamily: theme.headingFontFamily }}
                 >
                   {personalInfo.fullName}
                 </h1>
                 {personalInfo.jobTitle && (
-                  <div className="text-xl font-medium" style={{ color: theme.accentColor }}>
+                  <div className="text-xl font-medium break-words" style={{ color: theme.accentColor }}>
                     {personalInfo.jobTitle}
                   </div>
                 )}
               </div>
             </div>
-            <div className="text-right text-sm text-gray-600 space-y-0.5 shrink-0">
+            <div className="text-right text-sm text-gray-600 space-y-0.5 shrink-0 max-w-[40%] break-words pt-2">
               {personalInfo.email && <div>{personalInfo.email}</div>}
               {personalInfo.phone && <div>{personalInfo.phone}</div>}
               {personalInfo.location && <div>{personalInfo.location}</div>}
@@ -261,18 +275,18 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
     if (theme.template === 'creative') {
       return (
-        <header className="mb-8 flex justify-between items-start gap-6">
-          <div className="flex">
+        <header className="mb-8 flex justify-between items-start gap-6 break-inside-avoid">
+          <div className="flex flex-1 min-w-0">
             <div className="w-4 shrink-0 mr-6" style={{ backgroundColor: theme.accentColor }}></div>
-            <div className="py-2">
+            <div className="py-2 flex-1 min-w-0">
               <h1 
-                className="text-5xl font-black text-gray-900 mb-2 tracking-tighter"
+                className="text-5xl font-black text-gray-900 mb-2 tracking-tighter break-words leading-tight"
                 style={{ fontFamily: theme.headingFontFamily }}
               >
                 {personalInfo.fullName}
               </h1>
               {personalInfo.jobTitle && (
-                <div className="text-2xl font-light mb-4 text-gray-600">
+                <div className="text-2xl font-light mb-4 text-gray-600 break-words">
                   {personalInfo.jobTitle}
                 </div>
               )}
@@ -307,7 +321,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
     // Minimal (default)
     return (
-      <header className="text-center mb-6 flex flex-col items-center">
+      <header className="text-center mb-6 flex flex-col items-center break-inside-avoid">
         {personalInfo.profilePicture && (
           <img src={personalInfo.profilePicture} alt="Profile" className="w-auto h-28 rounded-md object-contain mb-4 shadow-sm" />
         )}
@@ -349,40 +363,33 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
   };
 
   return (
-    <div className="relative group">
-      {isOverflowing && (
-        <div className="absolute -top-12 left-0 right-0 bg-amber-100 text-amber-800 px-4 py-2 rounded-md shadow-sm border border-amber-200 flex items-center gap-2 text-sm font-medium z-10 print:hidden animate-in fade-in slide-in-from-top-2">
-          <AlertTriangle size={16} className="text-amber-600" />
-          Content exceeds one page. Consider using a more compact spacing or removing some items.
-        </div>
-      )}
+    <div className="relative group pb-12">
       <div 
         id="resume-preview-template"
         ref={ref}
         className={cn(
-          "bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 overflow-hidden relative transition-all duration-300",
-          isOverflowing ? "ring-2 ring-amber-400 ring-offset-2" : ""
+          "bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 relative transition-all duration-300"
         )}
         style={{ 
           width: '210mm', // A4 width
-          height: '297mm', // A4 height (fixed to force overflow detection)
+          minHeight: '297mm', // A4 height
           fontFamily: theme.fontFamily,
+          // Draw a subtle dashed line at every A4 page boundary (297mm)
+          backgroundImage: 'linear-gradient(to bottom, transparent 296.5mm, #cbd5e1 296.5mm, #cbd5e1 297mm)',
+          backgroundSize: '100% 297mm',
         }}
       >
         <div 
-          ref={contentRef}
-          className="w-full origin-top-left transition-transform duration-200"
+          className="w-full origin-top-left"
           style={{ 
             padding: '20mm',
-            transform: `scale(${scaleFactor})`,
-            width: `${100 / scaleFactor}%`,
           }}
         >
           {renderHeader()}
 
           {/* Summary */}
           {personalInfo.summary && (
-            <div className="mb-6 text-sm text-gray-800 leading-relaxed text-justify">
+            <div className="mb-6 text-sm text-gray-800 leading-relaxed text-justify break-inside-avoid">
               {personalInfo.summary}
             </div>
           )}
@@ -391,6 +398,22 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           <div className={cn("flex flex-col", sectionSpacing)}>
             {sectionOrder.map(renderSection)}
           </div>
+        </div>
+      </div>
+      
+      {/* Page break labels */}
+      <div className="absolute top-0 left-0 bottom-0 w-full pointer-events-none overflow-hidden">
+        <div className="mx-auto relative" style={{ width: '210mm', height: '100%' }}>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div 
+              key={i} 
+              className="absolute left-full ml-4 text-xs font-medium text-slate-400 whitespace-nowrap flex items-center gap-2"
+              style={{ top: `calc(${297 * (i + 1)}mm - 8px)` }}
+            >
+              <div className="w-4 h-px bg-slate-300"></div>
+              Page {i + 2} starts here
+            </div>
+          ))}
         </div>
       </div>
     </div>
