@@ -309,16 +309,6 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
 
           {showCloudMenu && (
             <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-              <div className="p-2 border-b border-gray-100">
-                <button
-                  onClick={handleSaveToCloud}
-                  disabled={isSaving}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-50 rounded-md transition-colors font-medium disabled:opacity-50"
-                >
-                  <UploadCloud size={16} />
-                  <span>{isSaving ? 'Saving...' : 'Save to Cloud'}</span>
-                </button>
-              </div>
               <div className="p-2 max-h-60 overflow-y-auto">
                 <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2 mt-1">
                   Saved Resumes

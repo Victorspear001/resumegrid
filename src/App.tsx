@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
+import { AutoSaver } from './components/AutoSaver';
 
 export default function App() {
   const [isDistractionFree, setIsDistractionFree] = useState(false);
@@ -31,6 +32,8 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <AutoSaver />
     </div>
   );
 }

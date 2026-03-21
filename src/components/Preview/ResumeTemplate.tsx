@@ -38,7 +38,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         const bottom = top + height;
 
         const pageNumber = Math.floor(top / pageHeightPx);
-        const paddingPx = container.offsetWidth * (20 / 210); 
+        const paddingPx = container.offsetWidth * (12 / 210); 
         
         // The safe bottom limit for the current page (page height - bottom padding)
         const safeBottom = (pageNumber * pageHeightPx) + (pageHeightPx - paddingPx);
@@ -65,19 +65,19 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
   // Spacing classes based on theme
   const spacingClasses = {
-    compact: 'space-y-2',
-    normal: 'space-y-4',
-    spacious: 'space-y-6',
+    compact: 'space-y-1',
+    normal: 'space-y-2',
+    spacious: 'space-y-4',
   };
 
   const sectionSpacing = spacingClasses[theme.spacing];
-  const itemSpacing = theme.spacing === 'compact' ? 'space-y-1' : theme.spacing === 'normal' ? 'space-y-2' : 'space-y-3';
+  const itemSpacing = theme.spacing === 'compact' ? 'space-y-0.5' : theme.spacing === 'normal' ? 'space-y-1' : 'space-y-2';
 
   const renderSectionHeader = (title: string) => {
     if (theme.template === 'executive') {
       return (
         <h2 
-          className="text-lg font-bold uppercase tracking-wider mb-2 pb-1 border-b-2 break-inside-avoid"
+          className="text-lg font-bold uppercase tracking-wider mb-1 pb-1 border-b-2 break-inside-avoid"
           style={{ color: '#1f2937', borderColor: theme.accentColor, fontFamily: theme.headingFontFamily }}
         >
           {title}
@@ -87,7 +87,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     
     if (theme.template === 'creative') {
       return (
-        <div className="flex items-center gap-2 mb-2 break-inside-avoid">
+        <div className="flex items-center gap-2 mb-1 break-inside-avoid">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.accentColor }}></div>
           <h2 
             className="text-xl font-bold tracking-wide"
@@ -102,7 +102,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     // Minimal (default)
     return (
       <h2 
-        className="text-lg font-bold uppercase tracking-wider border-b pb-1 mb-2 break-inside-avoid"
+        className="text-lg font-bold uppercase tracking-wider border-b pb-1 mb-1 break-inside-avoid"
         style={{ color: theme.accentColor, borderColor: `${theme.accentColor}40`, fontFamily: theme.headingFontFamily }}
       >
         {title}
@@ -126,13 +126,13 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                       {exp.startDate} - {exp.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline mb-1">
-                    <span className="font-medium text-gray-700 italic">{exp.company}</span>
-                    <span className="text-sm text-gray-500 shrink-0 ml-4">{exp.location}</span>
+                  <div className="flex justify-between items-baseline">
+                    <span className="font-medium text-gray-700 italic text-sm">{exp.company}</span>
+                    <span className="text-xs text-gray-500 shrink-0 ml-4">{exp.location}</span>
                   </div>
-                  <ul className="list-disc list-outside ml-4 space-y-0.5 text-sm text-gray-800">
+                  <ul className="list-disc list-outside ml-4 space-y-0 text-sm text-gray-800">
                     {exp.description.map((bullet, i) => (
-                      bullet.trim() && <li key={i} className="pl-1 leading-snug">{bullet}</li>
+                      bullet.trim() && <li key={i} className="pl-1 leading-tight">{bullet}</li>
                     ))}
                   </ul>
                 </div>
@@ -156,10 +156,10 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                     </span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="font-medium text-gray-700 italic">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
-                    <span className="text-sm text-gray-500 shrink-0 ml-4">{edu.location}</span>
+                    <span className="font-medium text-gray-700 italic text-sm">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
+                    <span className="text-xs text-gray-500 shrink-0 ml-4">{edu.location}</span>
                   </div>
-                  {edu.percentage && <div className="text-sm text-gray-600 mt-0.5">Percentage: {edu.percentage}</div>}
+                  {edu.percentage && <div className="text-xs text-gray-600">Percentage: {edu.percentage}</div>}
                 </div>
               ))}
             </div>
@@ -171,11 +171,11 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         return (
           <div key="skills" className={sectionSpacing}>
             {renderSectionHeader('Skills')}
-            <div className="grid grid-cols-1 gap-1.5 text-sm">
+            <div className="grid grid-cols-1 gap-1 text-sm">
               {skills.map((category) => (
                 <div key={category.id} className="flex items-start break-inside-avoid">
                   <span className="font-bold text-gray-900 w-32 shrink-0">{category.name}:</span>
-                  <span className="text-gray-800 leading-snug">{category.skills.join(', ')}</span>
+                  <span className="text-gray-800 leading-tight">{category.skills.join(', ')}</span>
                 </div>
               ))}
             </div>
@@ -194,21 +194,21 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-gray-900">{proj.name}</h3>
                       {proj.url && (
-                        <a href={`https://${proj.url.replace(/^https?:\/\//, '')}`} className="text-sm text-blue-600 hover:underline">
+                        <a href={`https://${proj.url.replace(/^https?:\/\//, '')}`} className="text-xs text-blue-600 hover:underline">
                           {proj.url}
                         </a>
                       )}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-700 italic mb-1">{proj.description}</div>
+                  <div className="text-sm text-gray-700 italic">{proj.description}</div>
                   {proj.technologies.length > 0 && (
-                    <div className="text-sm text-gray-600 mb-1">
+                    <div className="text-xs text-gray-600">
                       <span className="font-medium">Technologies:</span> {proj.technologies.join(', ')}
                     </div>
                   )}
-                  <ul className="list-disc list-outside ml-4 space-y-0.5 text-sm text-gray-800">
+                  <ul className="list-disc list-outside ml-4 space-y-0 text-sm text-gray-800">
                     {proj.highlights.map((bullet, i) => (
-                      bullet.trim() && <li key={i} className="pl-1 leading-snug">{bullet}</li>
+                      bullet.trim() && <li key={i} className="pl-1 leading-tight">{bullet}</li>
                     ))}
                   </ul>
                 </div>
@@ -225,31 +225,31 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
   const renderHeader = () => {
     if (theme.template === 'executive') {
       return (
-        <header className="mb-6 border-b-4 pb-4 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
-          <div className="flex justify-between items-start gap-6">
-            <div className="flex items-start gap-6 flex-1 min-w-0">
+        <header className="mb-4 border-b-4 pb-2 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex items-start gap-4 flex-1 min-w-0">
               {personalInfo.profilePicture && (
                 <img 
                   src={personalInfo.profilePicture} 
                   alt="Profile" 
-                  className="w-auto h-24 rounded-md object-contain shrink-0 border border-gray-200 shadow-sm" 
+                  className="w-auto h-20 rounded-md object-contain shrink-0 border border-gray-200 shadow-sm" 
                 />
               )}
               <div className="flex-1 min-w-0 pt-1">
                 <h1 
-                  className="text-4xl font-bold text-gray-900 mb-1 tracking-tight uppercase break-words leading-tight"
+                  className="text-3xl font-bold text-gray-900 mb-0.5 tracking-tight uppercase break-words leading-tight"
                   style={{ fontFamily: theme.headingFontFamily }}
                 >
                   {personalInfo.fullName}
                 </h1>
                 {personalInfo.jobTitle && (
-                  <div className="text-xl font-medium break-words" style={{ color: theme.accentColor }}>
+                  <div className="text-lg font-medium break-words" style={{ color: theme.accentColor }}>
                     {personalInfo.jobTitle}
                   </div>
                 )}
               </div>
             </div>
-            <div className="text-right text-sm text-gray-600 space-y-0.5 shrink-0 max-w-[40%] break-words pt-2">
+            <div className="text-right text-xs text-gray-600 space-y-0 shrink-0 max-w-[40%] break-words pt-1">
               {personalInfo.email && <div>{personalInfo.email}</div>}
               {personalInfo.phone && <div>{personalInfo.phone}</div>}
               {personalInfo.location && <div>{personalInfo.location}</div>}
@@ -275,23 +275,23 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
     if (theme.template === 'creative') {
       return (
-        <header className="mb-8 flex justify-between items-start gap-6 break-inside-avoid">
+        <header className="mb-6 flex justify-between items-start gap-4 break-inside-avoid">
           <div className="flex flex-1 min-w-0">
-            <div className="w-4 shrink-0 mr-6" style={{ backgroundColor: theme.accentColor }}></div>
-            <div className="py-2 flex-1 min-w-0">
+            <div className="w-3 shrink-0 mr-4" style={{ backgroundColor: theme.accentColor }}></div>
+            <div className="py-1 flex-1 min-w-0">
               <h1 
-                className="text-5xl font-black text-gray-900 mb-2 tracking-tighter break-words leading-tight"
+                className="text-4xl font-black text-gray-900 mb-1 tracking-tighter break-words leading-tight"
                 style={{ fontFamily: theme.headingFontFamily }}
               >
                 {personalInfo.fullName}
               </h1>
               {personalInfo.jobTitle && (
-                <div className="text-2xl font-light mb-4 text-gray-600 break-words">
+                <div className="text-xl font-light mb-2 text-gray-600 break-words">
                   {personalInfo.jobTitle}
                 </div>
               )}
               
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium" style={{ color: theme.accentColor }}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium" style={{ color: theme.accentColor }}>
                 {personalInfo.email && <span>{personalInfo.email}</span>}
                 {personalInfo.phone && <span>{personalInfo.phone}</span>}
                 {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -312,7 +312,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <img 
               src={personalInfo.profilePicture} 
               alt="Profile" 
-              className="w-auto h-32 rounded-md object-contain shrink-0 shadow-md border border-gray-100" 
+              className="w-auto h-24 rounded-md object-contain shrink-0 shadow-md border border-gray-100" 
             />
           )}
         </header>
@@ -321,23 +321,23 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
     // Minimal (default)
     return (
-      <header className="text-center mb-6 flex flex-col items-center break-inside-avoid">
+      <header className="text-center mb-4 flex flex-col items-center break-inside-avoid">
         {personalInfo.profilePicture && (
-          <img src={personalInfo.profilePicture} alt="Profile" className="w-auto h-28 rounded-md object-contain mb-4 shadow-sm" />
+          <img src={personalInfo.profilePicture} alt="Profile" className="w-auto h-24 rounded-md object-contain mb-2 shadow-sm" />
         )}
         <h1 
-          className="text-4xl font-bold text-gray-900 mb-1 tracking-tight"
+          className="text-3xl font-bold text-gray-900 mb-0.5 tracking-tight"
           style={{ fontFamily: theme.headingFontFamily }}
         >
           {personalInfo.fullName}
         </h1>
         {personalInfo.jobTitle && (
-          <div className="text-xl font-medium mb-3" style={{ color: theme.accentColor }}>
+          <div className="text-lg font-medium mb-1" style={{ color: theme.accentColor }}>
             {personalInfo.jobTitle}
           </div>
         )}
         
-        <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+        <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-gray-600">
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.email && personalInfo.phone && <span>•</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
@@ -345,7 +345,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           {personalInfo.location && <span>{personalInfo.location}</span>}
         </div>
         
-        <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1 text-sm text-gray-600 mt-1">
+        <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-gray-600 mt-0.5">
           {personalInfo.website && (
             <a href={`https://${personalInfo.website.replace(/^https?:\/\//, '')}`} className="hover:underline">
               {personalInfo.website}
@@ -382,14 +382,14 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         <div 
           className="w-full origin-top-left"
           style={{ 
-            padding: '20mm',
+            padding: '12mm',
           }}
         >
           {renderHeader()}
 
           {/* Summary */}
           {personalInfo.summary && (
-            <div className="mb-6 text-sm text-gray-800 leading-relaxed text-justify break-inside-avoid">
+            <div className="mb-4 text-sm text-gray-800 leading-snug text-justify break-inside-avoid">
               {personalInfo.summary}
             </div>
           )}
