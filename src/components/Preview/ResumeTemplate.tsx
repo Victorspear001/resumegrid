@@ -357,6 +357,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       )}
       <div 
+        id="resume-preview-template"
         ref={ref}
         className={cn(
           "bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 overflow-hidden relative transition-all duration-300",

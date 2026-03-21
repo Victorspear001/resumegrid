@@ -1,6 +1,8 @@
-import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown } from 'lucide-react';
+import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 interface ToolbarProps {
   isDistractionFree: boolean;
@@ -10,21 +12,94 @@ interface ToolbarProps {
 export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProps) {
   const { data, updateTheme } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const templatesRef = useRef<HTMLDivElement>(null);
-
-  const handleDownload = () => {
-    window.print();
-  };
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (templatesRef.current && !templatesRef.current.contains(event.target as Node)) {
         setShowTemplates(false);
       }
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setShowDownloadMenu(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const getResumeElement = () => {
+    return document.getElementById('resume-preview-template');
+  };
+
+  const handleDownloadPDF = async () => {
+    const element = getResumeElement();
+    if (!element) return;
+    
+    setShowDownloadMenu(false);
+    
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById('resume-preview-template');
+          if (clonedElement && clonedElement.parentElement) {
+            clonedElement.parentElement.style.transform = 'none';
+          }
+        }
+      });
+      
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${data.personalInfo.fullName || 'Resume'}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
+  };
+
+  const handleDownloadJPG = async () => {
+    const element = getResumeElement();
+    if (!element) return;
+    
+    setShowDownloadMenu(false);
+    
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById('resume-preview-template');
+          if (clonedElement && clonedElement.parentElement) {
+            clonedElement.parentElement.style.transform = 'none';
+          }
+        }
+      });
+      
+      const link = document.createElement('a');
+      link.download = `${data.personalInfo.fullName || 'Resume'}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 1.0);
+      link.click();
+    } catch (error) {
+      console.error('Error generating JPG:', error);
+      alert('Failed to generate JPG. Please try again.');
+    }
+  };
 
   const templates = [
     { id: 'minimal', name: 'Minimal', description: 'Clean and simple, perfect for most industries.' },
@@ -104,13 +179,37 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
           <span className="hidden sm:inline">Design</span>
         </button>
 
-        <button 
-          onClick={handleDownload}
-          className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors ml-2"
-        >
-          <Download size={16} />
-          <span>Download PDF</span>
-        </button>
+        <div className="relative" ref={downloadMenuRef}>
+          <button 
+            onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+            className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors ml-2"
+          >
+            <Download size={16} />
+            <span>Download</span>
+            <ChevronDown size={14} className={`transition-transform ${showDownloadMenu ? 'rotate-180' : ''}`} />
+          </button>
+
+          {showDownloadMenu && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+              <div className="p-1">
+                <button
+                  onClick={handleDownloadPDF}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  <FileText size={16} className="text-red-500" />
+                  <span>Download as PDF</span>
+                </button>
+                <button
+                  onClick={handleDownloadJPG}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                >
+                  <ImageIcon size={16} className="text-blue-500" />
+                  <span>Download as JPG</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
