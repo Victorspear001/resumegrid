@@ -29,30 +29,50 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const getResumeElement = () => {
-    return document.getElementById('resume-preview-template');
-  };
+  const generateCanvas = async () => {
+    const element = document.getElementById('resume-preview-template');
+    if (!element) throw new Error('Resume element not found');
 
-  const handleDownloadPDF = async () => {
-    const element = getResumeElement();
-    if (!element) return;
+    // Save original styles
+    const parent = element.parentElement;
+    const originalParentTransform = parent ? parent.style.transform : '';
     
-    setShowDownloadMenu(false);
+    const innerDiv = element.firstElementChild as HTMLElement;
+    const originalInnerTransform = innerDiv ? innerDiv.style.transform : '';
+    const originalInnerWidth = innerDiv ? innerDiv.style.width : '';
     
+    // Apply unscaled styles to real DOM temporarily
+    if (parent) parent.style.transform = 'scale(1)';
+    if (innerDiv) {
+      innerDiv.style.transform = 'scale(1)';
+      innerDiv.style.width = '100%';
+    }
+
+    // Wait for DOM to repaint
+    await new Promise(resolve => setTimeout(resolve, 150));
+
     try {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: '#ffffff',
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.getElementById('resume-preview-template');
-          if (clonedElement && clonedElement.parentElement) {
-            clonedElement.parentElement.style.transform = 'none';
-          }
-        }
       });
-      
+      return canvas;
+    } finally {
+      // Restore original styles
+      if (parent) parent.style.transform = originalParentTransform;
+      if (innerDiv) {
+        innerDiv.style.transform = originalInnerTransform;
+        innerDiv.style.width = originalInnerWidth;
+      }
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setShowDownloadMenu(false);
+    
+    try {
+      const canvas = await generateCanvas();
       const imgData = canvas.toDataURL('image/jpeg', 1.0);
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -61,43 +81,28 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${data.personalInfo.fullName || 'Resume'}.pdf`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
+      alert(`Failed to generate PDF: ${error.message || 'Unknown error'}`);
     }
   };
 
   const handleDownloadJPG = async () => {
-    const element = getResumeElement();
-    if (!element) return;
-    
     setShowDownloadMenu(false);
     
     try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.getElementById('resume-preview-template');
-          if (clonedElement && clonedElement.parentElement) {
-            clonedElement.parentElement.style.transform = 'none';
-          }
-        }
-      });
-      
+      const canvas = await generateCanvas();
       const link = document.createElement('a');
       link.download = `${data.personalInfo.fullName || 'Resume'}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 1.0);
       link.click();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating JPG:', error);
-      alert('Failed to generate JPG. Please try again.');
+      alert(`Failed to generate JPG: ${error.message || 'Unknown error'}`);
     }
   };
 
