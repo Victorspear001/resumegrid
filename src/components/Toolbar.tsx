@@ -1,7 +1,7 @@
 import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
-import html2canvas from 'html2canvas';
+import { toJpeg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 
 interface ToolbarProps {
@@ -29,7 +29,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const generateCanvas = async () => {
+  const generateImage = async () => {
     const element = document.getElementById('resume-preview-template');
     if (!element) throw new Error('Resume element not found');
 
@@ -52,12 +52,17 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     await new Promise(resolve => setTimeout(resolve, 150));
 
     try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
+      const dataUrl = await toJpeg(element, { 
+        quality: 1.0, 
         backgroundColor: '#ffffff',
+        pixelRatio: 2
       });
-      return canvas;
+      
+      return { 
+        dataUrl, 
+        width: element.offsetWidth, 
+        height: element.offsetHeight 
+      };
     } finally {
       // Restore original styles
       if (parent) parent.style.transform = originalParentTransform;
@@ -72,8 +77,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     setShowDownloadMenu(false);
     
     try {
-      const canvas = await generateCanvas();
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const { dataUrl, width, height } = await generateImage();
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -81,9 +85,9 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = (height * pdfWidth) / width;
       
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${data.personalInfo.fullName || 'Resume'}.pdf`);
     } catch (error: any) {
       console.error('Error generating PDF:', error);
@@ -95,10 +99,10 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     setShowDownloadMenu(false);
     
     try {
-      const canvas = await generateCanvas();
+      const { dataUrl } = await generateImage();
       const link = document.createElement('a');
       link.download = `${data.personalInfo.fullName || 'Resume'}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 1.0);
+      link.href = dataUrl;
       link.click();
     } catch (error: any) {
       console.error('Error generating JPG:', error);
