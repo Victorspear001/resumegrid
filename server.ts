@@ -41,9 +41,52 @@ async function startServer() {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        )
+      `);
       res.json({ success: true, message: "Database initialized successfully" });
     } catch (error: any) {
       console.error("DB Init Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Logo API
+  app.get("/api/settings/logo", async (req, res) => {
+    try {
+      const db = getDb();
+      const result = await db.execute({
+        sql: "SELECT value FROM settings WHERE key = 'logo'",
+        args: []
+      });
+      if (result.rows.length === 0) {
+        return res.json({ logo: null });
+      }
+      res.json({ logo: result.rows[0].value });
+    } catch (error: any) {
+      console.error("Get Logo Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/settings/logo", async (req, res) => {
+    try {
+      const db = getDb();
+      const { logo } = req.body;
+      if (!logo) {
+        return res.status(400).json({ error: "Logo data is required" });
+      }
+
+      await db.execute({
+        sql: "INSERT OR REPLACE INTO settings (key, value) VALUES ('logo', ?)",
+        args: [logo]
+      });
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Save Logo Error:", error);
       res.status(500).json({ error: error.message });
     }
   });

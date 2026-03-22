@@ -1,4 +1,4 @@
-import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Cloud, UploadCloud, DownloadCloud } from 'lucide-react';
+import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Cloud, UploadCloud, DownloadCloud, Upload } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
 import { toJpeg } from 'html-to-image';
@@ -10,19 +10,37 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProps) {
-  const { resumeId, data, updateTheme, loadData, setResumeId } = useResumeStore();
+  const { resumeId, data, updateTheme, loadData, setResumeId, logoUrl, setLogoUrl } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [showCloudMenu, setShowCloudMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [savedResumes, setSavedResumes] = useState<any[]>([]);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   
   const templatesRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
   const cloudMenuRef = useRef<HTMLDivElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    // Fetch logo on mount
+    const fetchLogo = async () => {
+      try {
+        const res = await fetch('/api/settings/logo');
+        if (res.ok) {
+          const result = await res.json();
+          if (result.logo) {
+            setLogoUrl(result.logo);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch logo", err);
+      }
+    };
+    fetchLogo();
+
     function handleClickOutside(event: MouseEvent) {
       if (templatesRef.current && !templatesRef.current.contains(event.target as Node)) {
         setShowTemplates(false);
@@ -37,6 +55,35 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogoUpload = async (e: any) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result as string;
+        const res = await fetch('/api/settings/logo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ logo: base64 })
+        });
+        if (res.ok) {
+          setLogoUrl(base64);
+        } else {
+          alert("Failed to upload logo");
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Logo upload error", err);
+      alert("Error uploading logo");
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
 
   const fetchSavedResumes = async () => {
     try {
@@ -91,17 +138,6 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       setIsLoading(false);
     }
   };
-
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Check if logo exists
-    fetch('/logo.png', { method: 'HEAD' })
-      .then(res => {
-        if (res.ok) setLogoUrl(`/logo.png?t=${Date.now()}`);
-      })
-      .catch(() => {});
-  }, []);
 
   const handleCloudMenuToggle = () => {
     if (!showCloudMenu) {
@@ -224,14 +260,33 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-20 relative">
       <div className="flex items-center gap-2">
-        {logoUrl ? (
-          <img src={logoUrl} alt="Resume Kill Logo" className="w-8 h-8 rounded-md object-cover shadow-sm" />
-        ) : (
-          <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center text-white text-lg shadow-sm">
-            🔪🖊️
-          </div>
-        )}
-        <h1 className="font-semibold text-gray-900 tracking-tight">Resume Kill</h1>
+        <div className="relative group">
+          {logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-md object-cover shadow-sm" />
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center text-white text-lg shadow-sm">
+                🔪🖊️
+              </div>
+              <button 
+                onClick={() => logoInputRef.current?.click()}
+                disabled={isUploadingLogo}
+                className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors"
+              >
+                <Upload size={12} />
+                {isUploadingLogo ? '...' : 'Upload Logo'}
+              </button>
+              <input 
+                ref={logoInputRef}
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={handleLogoUpload}
+              />
+            </div>
+          )}
+        </div>
+        <h1 className="font-semibold text-gray-900 tracking-tight ml-1">Resume Kill</h1>
       </div>
 
       <div className="flex items-center gap-3">

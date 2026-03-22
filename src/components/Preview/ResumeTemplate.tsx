@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils';
 import { SectionType } from '../../types/resume';
 
 export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
-  const { data } = useResumeStore();
+  const { data, logoUrl } = useResumeStore();
   const { personalInfo, experience, education, skills, projects, sectionOrder, theme } = data;
 
   // Pagination logic to perfectly align content across multiple pages
@@ -61,7 +61,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
     const timeoutId = setTimeout(paginate, 100);
     return () => clearTimeout(timeoutId);
-  }, [data, theme.margin, theme.spacing, theme.template, theme.lineHeight]);
+  }, [data, theme.margin, theme.spacing, theme.template, theme.lineHeight, logoUrl]);
 
   // Spacing classes based on theme
   const spacingClasses = {
@@ -228,6 +228,13 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         <header className="mb-4 border-b-4 pb-2 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
           <div className="flex justify-between items-start gap-4">
             <div className="flex items-start gap-4 flex-1 min-w-0">
+              {logoUrl && (
+                <img 
+                  src={logoUrl} 
+                  alt="Logo" 
+                  className="w-auto h-12 object-contain shrink-0" 
+                />
+              )}
               {personalInfo.profilePicture && (
                 <img 
                   src={personalInfo.profilePicture} 
@@ -308,13 +315,22 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
             </div>
           </div>
-          {personalInfo.profilePicture && (
-            <img 
-              src={personalInfo.profilePicture} 
-              alt="Profile" 
-              className="w-auto h-24 rounded-md object-contain shrink-0 shadow-md border border-gray-100" 
-            />
-          )}
+          <div className="flex flex-col items-end gap-2">
+            {logoUrl && (
+              <img 
+                src={logoUrl} 
+                alt="Logo" 
+                className="w-auto h-12 object-contain shrink-0" 
+              />
+            )}
+            {personalInfo.profilePicture && (
+              <img 
+                src={personalInfo.profilePicture} 
+                alt="Profile" 
+                className="w-auto h-24 rounded-md object-contain shrink-0 shadow-md border border-gray-100" 
+              />
+            )}
+          </div>
         </header>
       );
     }
@@ -322,6 +338,9 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     // Minimal (default)
     return (
       <header className="text-center mb-4 flex flex-col items-center break-inside-avoid">
+        {logoUrl && (
+          <img src={logoUrl} alt="Logo" className="w-auto h-16 object-contain mb-4" />
+        )}
         {personalInfo.profilePicture && (
           <img src={personalInfo.profilePicture} alt="Profile" className="w-auto h-24 rounded-md object-contain mb-2 shadow-sm" />
         )}

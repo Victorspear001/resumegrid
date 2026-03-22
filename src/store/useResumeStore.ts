@@ -5,7 +5,9 @@ import { ResumeData, Experience, Education, Project, SkillCategory, SectionType,
 interface ResumeState {
   resumeId: string;
   data: ResumeData;
+  logoUrl: string | null;
   setResumeId: (id: string) => void;
+  setLogoUrl: (url: string | null) => void;
   updatePersonalInfo: (data: Partial<ResumeData['personalInfo']>) => void;
   
   // Experience
@@ -135,8 +137,10 @@ const initialData: ResumeData = {
 export const useResumeStore = create<ResumeState>((set) => ({
   resumeId: uuidv4(),
   data: initialData,
+  logoUrl: null,
   
   setResumeId: (id) => set({ resumeId: id }),
+  setLogoUrl: (url) => set({ logoUrl: url }),
 
   updatePersonalInfo: (info) => set((state) => ({
     data: { ...state.data, personalInfo: { ...state.data.personalInfo, ...info } }
