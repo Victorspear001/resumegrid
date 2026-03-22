@@ -55,7 +55,12 @@ export interface ResumeTheme {
   fontFamily: string;
   headingFontFamily: string;
   spacing: 'compact' | 'normal' | 'spacious';
-  template: 'minimal' | 'executive' | 'creative';
+  template: 
+    | 'minimal' | 'executive' | 'creative'
+    | 'awesome-cv' | 'deedy' | 'alta-cv' | 'plasmati'
+    | 'calligraphic' | 'pastel' | 'monochrome' | 'color-splash' | 'visionary'
+    | 'modern-cv' | 'imprecv' | 'chicv' | 'minimalist-white-grey'
+    | 'spark' | 'inspire' | 'simple-design-freelancer';
   margin: number; // in mm
   lineHeight: number; // multiplier
 }

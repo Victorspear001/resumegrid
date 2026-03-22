@@ -1,3 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-neon-red: #cc0033;
+  --color-neon-blue: #0088aa;
+  --color-neon-purple: #8a2be2;
+}
+
+@layer utilities {
+  .neon-glow-red {
+    box-shadow: 0 0 3px var(--color-neon-red), 0 0 10px var(--color-neon-red);
+  }
+  .neon-glow-blue {
+    box-shadow: 0 0 3px var(--color-neon-blue), 0 0 10px var(--color-neon-blue);
+  }
+  .neon-text-red {
+    text-shadow: 0 0 3px var(--color-neon-red), 0 0 8px var(--color-neon-red);
+  }
+  .neon-text-blue {
+    text-shadow: 0 0 3px var(--color-neon-blue), 0 0 8px var(--color-neon-blue);
+  }
+  .neon-border-red {
+    border-color: var(--color-neon-red);
+    box-shadow: 0 0 3px var(--color-neon-red);
+  }
+  .neon-border-blue {
+    border-color: var(--color-neon-blue);
+    box-shadow: 0 0 3px var(--color-neon-blue);
+  }
+}
+

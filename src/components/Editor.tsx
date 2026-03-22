@@ -23,11 +23,11 @@ const SortableSection: React.FC<{ id: string; children: React.ReactNode }> = ({ 
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={`relative bg-white rounded-lg border border-gray-200 shadow-sm ${isDragging ? 'shadow-lg ring-2 ring-blue-500 opacity-90' : ''}`}>
+    <div ref={setNodeRef} style={style} className={`relative bg-[#0a0a0a] rounded-lg border border-gray-800 shadow-sm ${isDragging ? 'shadow-[0_0_20px_rgba(0,243,255,0.2)] ring-2 ring-blue-500 opacity-90' : ''}`}>
       <div 
         {...attributes} 
         {...listeners}
-        className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-gray-50 rounded-l-lg border-r border-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+        className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center cursor-grab active:cursor-grabbing hover:bg-gray-900 rounded-l-lg border-r border-gray-800 text-gray-600 hover:text-neon-blue transition-colors"
       >
         <GripVertical size={20} />
       </div>
@@ -65,18 +65,18 @@ export function Editor() {
   return (
     <div className="p-8 max-w-3xl mx-auto space-y-8 pb-32">
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight text-gray-900">Resume Content</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-white neon-text-blue">Resume Content</h2>
         <p className="text-gray-500">Fill in your details below. The preview will update automatically.</p>
       </div>
 
       <ThemeSettings />
       
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <div className="bg-[#0a0a0a] rounded-lg border border-gray-800 shadow-sm p-6">
         <PersonalInfoForm />
       </div>
       
       <div className="space-y-4">
-        <h3 className="text-lg font-medium text-gray-900 px-1">Reorderable Sections</h3>
+        <h3 className="text-lg font-medium text-gray-300 px-1">Reorderable Sections</h3>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={data.sectionOrder} strategy={verticalListSortingStrategy}>
             <div className="space-y-6">

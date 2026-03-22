@@ -10,37 +10,19 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProps) {
-  const { resumeId, data, updateTheme, loadData, setResumeId, logoUrl, setLogoUrl } = useResumeStore();
+  const { resumeId, data, updateTheme, loadData, setResumeId } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [showCloudMenu, setShowCloudMenu] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [savedResumes, setSavedResumes] = useState<any[]>([]);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   
   const templatesRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
   const cloudMenuRef = useRef<HTMLDivElement>(null);
-  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Fetch logo on mount
-    const fetchLogo = async () => {
-      try {
-        const res = await fetch('/api/settings/logo');
-        if (res.ok) {
-          const result = await res.json();
-          if (result.logo) {
-            setLogoUrl(result.logo);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch logo", err);
-      }
-    };
-    fetchLogo();
-
     function handleClickOutside(event: MouseEvent) {
       if (templatesRef.current && !templatesRef.current.contains(event.target as Node)) {
         setShowTemplates(false);
@@ -55,35 +37,6 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleLogoUpload = async (e: any) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploadingLogo(true);
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        const res = await fetch('/api/settings/logo', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ logo: base64 })
-        });
-        if (res.ok) {
-          setLogoUrl(base64);
-        } else {
-          alert("Failed to upload logo");
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error("Logo upload error", err);
-      alert("Error uploading logo");
-    } finally {
-      setIsUploadingLogo(false);
-    }
-  };
 
   const fetchSavedResumes = async () => {
     try {
@@ -252,85 +205,110 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   };
 
   const templates = [
-    { id: 'minimal', name: 'Minimal', description: 'Clean and simple, perfect for most industries.' },
-    { id: 'executive', name: 'Executive', description: 'Traditional and professional, great for corporate roles.' },
-    { id: 'creative', name: 'Creative', description: 'Bold and modern, ideal for design and tech.' },
+    { 
+      category: 'Professional/Technical (LaTeX)',
+      items: [
+        { id: 'awesome-cv', name: 'Awesome CV', description: 'Highly customizable, clean LaTeX style.' },
+        { id: 'deedy', name: 'Deedy', description: 'Two-column, academic layout.' },
+        { id: 'alta-cv', name: 'Alta CV', description: 'Infographics-focused professional layout.' },
+        { id: 'plasmati', name: 'Plasmati', description: 'Academic and research oriented.' },
+      ]
+    },
+    {
+      category: 'Creative/Modern',
+      items: [
+        { id: 'creative', name: 'Creative', description: 'Bold and modern, ideal for design and tech.' },
+        { id: 'calligraphic', name: 'Calligraphic', description: 'Elegant typography-focused design.' },
+        { id: 'pastel', name: 'Pastel', description: 'Soft colors and modern layout.' },
+        { id: 'monochrome', name: 'Monochrome', description: 'Sleek black and white professional look.' },
+        { id: 'color-splash', name: 'Color Splash', description: 'Vibrant accents for a standout resume.' },
+        { id: 'visionary', name: 'Visionary', description: 'Forward-thinking, unique structure.' },
+      ]
+    },
+    {
+      category: 'Minimalist & Clean',
+      items: [
+        { id: 'minimal', name: 'Minimal', description: 'Clean and simple, perfect for most industries.' },
+        { id: 'modern-cv', name: 'Modern-cv', description: 'Contemporary clean design.' },
+        { id: 'imprecv', name: 'Imprecv', description: 'Impressive minimalist structure.' },
+        { id: 'chicv', name: 'Chicv', description: 'Chic and professional minimalist look.' },
+        { id: 'minimalist-white-grey', name: 'Minimalist White & Grey', description: 'Subtle professional tones.' },
+      ]
+    },
+    {
+      category: 'Entry-Level/Recent Grads',
+      items: [
+        { id: 'spark', name: 'Spark', description: 'Energetic design for newcomers.' },
+        { id: 'inspire', name: 'Inspire', description: 'Inspirational layout for career starters.' },
+        { id: 'simple-design-freelancer', name: 'Freelancer', description: 'Simple design for independent workers.' },
+      ]
+    },
+    {
+      category: 'Classic',
+      items: [
+        { id: 'executive', name: 'Executive', description: 'Traditional and professional, great for corporate roles.' },
+      ]
+    }
   ] as const;
 
   return (
-    <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0 z-20 relative">
+    <header className="h-14 bg-[#0a0a0a] border-b border-gray-800 flex items-center justify-between px-6 shrink-0 z-20 relative shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
       <div className="flex items-center gap-2">
-        <div className="relative group">
-          {logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="w-8 h-8 rounded-md object-cover shadow-sm" />
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-red-600 rounded-md flex items-center justify-center text-white text-lg shadow-sm">
-                🔪🖊️
-              </div>
-              <button 
-                onClick={() => logoInputRef.current?.click()}
-                disabled={isUploadingLogo}
-                className="flex items-center gap-1.5 px-2 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded border border-red-200 transition-colors"
-              >
-                <Upload size={12} />
-                {isUploadingLogo ? '...' : 'Upload Logo'}
-              </button>
-              <input 
-                ref={logoInputRef}
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
-                onChange={handleLogoUpload}
-              />
-            </div>
-          )}
+        <div className="w-8 h-8 bg-[#8b0000] rounded-md flex items-center justify-center text-white text-sm font-bold shadow-[0_0_5px_rgba(139,0,0,0.3)]">
+          RK
         </div>
-        <h1 className="font-semibold text-gray-900 tracking-tight ml-1">Resume Kill</h1>
+        <h1 className="font-bold text-gray-200 tracking-tighter ml-1 text-lg neon-text-red">Resume Kill</h1>
       </div>
 
       <div className="flex items-center gap-3">
         <button 
           onClick={() => setIsDistractionFree(!isDistractionFree)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-blue hover:bg-gray-900 rounded-md transition-all duration-300"
           title={isDistractionFree ? "Show Preview" : "Distraction Free Mode"}
         >
           {isDistractionFree ? <Minimize size={16} /> : <Maximize size={16} />}
           <span className="hidden sm:inline">{isDistractionFree ? "Split View" : "Focus Mode"}</span>
         </button>
 
-        <div className="w-px h-6 bg-gray-200 mx-1"></div>
+        <div className="w-px h-6 bg-gray-800 mx-1"></div>
 
         <div className="relative" ref={templatesRef}>
           <button 
             onClick={() => setShowTemplates(!showTemplates)}
-            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${showTemplates ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${showTemplates ? 'bg-gray-900 text-neon-blue shadow-[0_0_10px_rgba(0,243,255,0.2)]' : 'text-gray-400 hover:text-neon-blue hover:bg-gray-900'}`}
           >
             <LayoutTemplate size={16} />
             <span className="hidden sm:inline">Templates</span>
-            <ChevronDown size={14} className={`transition-transform ${showTemplates ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`transition-transform duration-300 ${showTemplates ? 'rotate-180' : ''}`} />
           </button>
 
           {showTemplates && (
-            <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-              <div className="p-2">
-                {templates.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => {
-                      updateTheme({ template: t.id });
-                      setShowTemplates(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-md transition-colors ${data.theme.template === t.id ? 'bg-blue-50 border-blue-100' : 'hover:bg-gray-50 border-transparent'} border`}
-                  >
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className={`font-medium ${data.theme.template === t.id ? 'text-blue-700' : 'text-gray-900'}`}>{t.name}</span>
-                      {data.theme.template === t.id && (
-                        <span className="w-2 h-2 rounded-full bg-blue-600"></span>
-                      )}
+            <div className="absolute top-full right-0 mt-1 w-80 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="p-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                {templates.map((category) => (
+                  <div key={category.category} className="mb-4 last:mb-0">
+                    <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-1">
+                      {category.category}
                     </div>
-                    <div className="text-xs text-gray-500">{t.description}</div>
-                  </button>
+                    {category.items.map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => {
+                          updateTheme({ template: t.id as any });
+                          setShowTemplates(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 rounded-md transition-all duration-200 ${data.theme.template === t.id ? 'bg-gray-900 border-neon-blue/30 text-neon-blue' : 'hover:bg-gray-800 border-transparent text-gray-300'} border mb-1 last:mb-0`}
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="font-semibold text-sm">{t.name}</span>
+                          {data.theme.template === t.id && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-neon-blue shadow-[0_0_5px_rgba(0,243,255,1)]"></span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-gray-500 line-clamp-1">{t.description}</div>
+                      </button>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
@@ -338,10 +316,8 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
         </div>
         
         <button 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-purple hover:bg-gray-900 rounded-md transition-all duration-300"
           onClick={() => {
-            // Scroll to design settings if possible, or maybe we don't need this button if design settings are always visible
-            // For now, let's keep it as a UI hint or we can remove it since ThemeSettings is in the Editor
             const themeSection = document.getElementById('theme-settings');
             if (themeSection) {
               themeSection.scrollIntoView({ behavior: 'smooth' });
@@ -355,37 +331,46 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
         <div className="relative" ref={cloudMenuRef}>
           <button 
             onClick={handleCloudMenuToggle}
-            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${showCloudMenu ? 'bg-indigo-50 text-indigo-600' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${showCloudMenu ? 'bg-gray-900 text-neon-purple shadow-[0_0_10px_rgba(188,19,254,0.2)]' : 'text-gray-400 hover:text-neon-purple hover:bg-gray-900'}`}
           >
             <Cloud size={16} />
             <span className="hidden sm:inline">Cloud</span>
-            <ChevronDown size={14} className={`transition-transform ${showCloudMenu ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`transition-transform duration-300 ${showCloudMenu ? 'rotate-180' : ''}`} />
           </button>
 
           {showCloudMenu && (
-            <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-              <div className="p-2 max-h-60 overflow-y-auto">
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 mb-2 mt-1">
+            <div className="absolute top-full right-0 mt-1 w-64 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="p-2 max-h-60 overflow-y-auto custom-scrollbar">
+                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] px-3 mb-2 mt-1">
                   Saved Resumes
                 </div>
                 {savedResumes.length === 0 ? (
-                  <div className="text-sm text-gray-500 px-3 py-2 italic">No saved resumes found.</div>
+                  <div className="text-xs text-gray-500 px-3 py-4 italic text-center">No saved resumes found.</div>
                 ) : (
                   savedResumes.map((resume) => (
                     <button
                       key={resume.id}
                       onClick={() => handleLoadFromCloud(resume.id)}
                       disabled={isLoading}
-                      className="w-full text-left flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
+                      className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 disabled:opacity-50 group"
                     >
-                      <DownloadCloud size={14} className="text-gray-400 shrink-0" />
+                      <DownloadCloud size={14} className="text-gray-600 group-hover:text-neon-purple shrink-0 transition-colors" />
                       <div className="truncate">
-                        <div className="font-medium truncate">{resume.title}</div>
-                        <div className="text-xs text-gray-400">{new Date(resume.updated_at).toLocaleDateString()}</div>
+                        <div className="font-semibold truncate group-hover:text-white transition-colors">{resume.title}</div>
+                        <div className="text-[10px] text-gray-600">{new Date(resume.updated_at).toLocaleDateString()}</div>
                       </div>
                     </button>
                   ))
                 )}
+                <div className="border-t border-gray-800 mt-2 pt-2 px-2">
+                  <button 
+                    onClick={handleSaveToCloud}
+                    disabled={isSaving}
+                    className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-neon-purple hover:bg-neon-purple/10 rounded-md transition-all duration-300 disabled:opacity-50"
+                  >
+                    {isSaving ? 'Saving...' : 'Save Current to Cloud'}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -394,29 +379,29 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
         <div className="relative" ref={downloadMenuRef}>
           <button 
             onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-            className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors ml-2"
+            className="flex items-center gap-2 px-4 py-1.5 text-sm font-bold text-gray-100 bg-[#005577] hover:bg-[#004466] rounded-md transition-all duration-300 ml-2 shadow-[0_0_10px_rgba(0,85,119,0.3)]"
           >
             <Download size={16} />
             <span>Download</span>
-            <ChevronDown size={14} className={`transition-transform ${showDownloadMenu ? 'rotate-180' : ''}`} />
+            <ChevronDown size={14} className={`transition-transform duration-300 ${showDownloadMenu ? 'rotate-180' : ''}`} />
           </button>
 
           {showDownloadMenu && (
-            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
+            <div className="absolute top-full right-0 mt-1 w-52 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
               <div className="p-1">
                 <button
                   onClick={handleDownloadPDF}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 group"
                 >
-                  <FileText size={16} className="text-red-500" />
-                  <span>Download as PDF</span>
+                  <FileText size={16} className="text-neon-red group-hover:neon-text-red transition-all" />
+                  <span className="font-medium">Download as PDF</span>
                 </button>
                 <button
                   onClick={handleDownloadJPG}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 group"
                 >
-                  <ImageIcon size={16} className="text-blue-500" />
-                  <span>Download as JPG</span>
+                  <ImageIcon size={16} className="text-neon-blue group-hover:neon-text-blue transition-all" />
+                  <span className="font-medium">Download as JPG</span>
                 </button>
               </div>
             </div>
