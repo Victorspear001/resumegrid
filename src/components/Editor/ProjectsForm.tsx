@@ -4,6 +4,7 @@ import { useResumeStore } from '../../store/useResumeStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { RichTextEditor } from './RichTextEditor';
 
 const SortableProjectItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -52,30 +53,6 @@ export function ProjectsForm() {
       const newIndex = projects.findIndex(p => p.id === over.id);
       reorderProjects(oldIndex, newIndex);
     }
-  };
-
-  const handleHighlightChange = (projId: string, index: number, value: string) => {
-    const proj = projects.find(p => p.id === projId);
-    if (!proj) return;
-    
-    const newHighlights = [...proj.highlights];
-    newHighlights[index] = value;
-    updateProject(projId, { highlights: newHighlights });
-  };
-
-  const addHighlight = (projId: string) => {
-    const proj = projects.find(p => p.id === projId);
-    if (!proj) return;
-    
-    updateProject(projId, { highlights: [...proj.highlights, ''] });
-  };
-
-  const removeHighlight = (projId: string, index: number) => {
-    const proj = projects.find(p => p.id === projId);
-    if (!proj) return;
-    
-    const newHighlights = proj.highlights.filter((_, i) => i !== index);
-    updateProject(projId, { highlights: newHighlights });
   };
 
   const handleTechChange = (projId: string, value: string) => {
@@ -153,33 +130,13 @@ export function ProjectsForm() {
                   
                   <div className="sm:col-span-2 space-y-3 mt-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-gray-400">Highlights (Bullet Points)</label>
+                      <label className="text-sm font-medium text-gray-400">Key Features & Achievements</label>
                     </div>
-                    {proj.highlights.map((bullet, i) => (
-                      <div key={i} className="flex gap-2 items-start">
-                        <div className="mt-2.5 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></div>
-                        <textarea
-                          value={bullet}
-                          onChange={(e) => handleHighlightChange(proj.id, i, e.target.value)}
-                          rows={2}
-                          className="flex-1 px-3 py-2 border border-gray-800 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 bg-[#050505] text-gray-300 resize-y"
-                          placeholder="Describe key features or achievements..."
-                        />
-                        <button 
-                          onClick={() => removeHighlight(proj.id, i)}
-                          className="p-2 text-gray-600 hover:text-red-500 mt-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                    
-                    <button 
-                      onClick={() => addHighlight(proj.id)}
-                      className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-500 mt-2"
-                    >
-                      <Plus size={14} /> Add Highlight
-                    </button>
+                    <RichTextEditor
+                      value={proj.highlights}
+                      onChange={(content) => updateProject(proj.id, { highlights: content })}
+                      placeholder="Describe key features or achievements..."
+                    />
                   </div>
                 </div>
               </SortableProjectItem>

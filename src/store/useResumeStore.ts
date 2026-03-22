@@ -61,11 +61,7 @@ const initialData: ResumeData = {
       startDate: 'Jan 2020',
       endDate: 'Present',
       current: true,
-      description: [
-        'Led a team of 5 engineers to rebuild the core customer portal, reducing load times by 40%.',
-        'Architected and implemented a microservices architecture using Node.js and Docker.',
-        'Mentored junior developers and established best practices for code reviews and testing.',
-      ],
+      description: '<ul><li>Led a team of 5 engineers to rebuild the core customer portal, reducing load times by 40%.</li><li>Architected and implemented a microservices architecture using Node.js and Docker.</li><li>Mentored junior developers and established best practices for code reviews and testing.</li></ul>',
     },
     {
       id: uuidv4(),
@@ -75,11 +71,7 @@ const initialData: ResumeData = {
       startDate: 'Jun 2016',
       endDate: 'Dec 2019',
       current: false,
-      description: [
-        'Developed RESTful APIs for a high-traffic e-commerce platform using Python and Django.',
-        'Integrated third-party payment gateways, increasing successful transactions by 15%.',
-        'Collaborated with product managers to define technical requirements and project scopes.',
-      ],
+      description: '<ul><li>Developed RESTful APIs for a high-traffic e-commerce platform using Python and Django.</li><li>Integrated third-party payment gateways, increasing successful transactions by 15%.</li><li>Collaborated with product managers to define technical requirements and project scopes.</li></ul>',
     }
   ],
   education: [
@@ -92,7 +84,7 @@ const initialData: ResumeData = {
       startDate: 'Aug 2012',
       endDate: 'May 2016',
       percentage: '95%',
-      description: [],
+      description: '',
     }
   ],
   projects: [
@@ -102,10 +94,7 @@ const initialData: ResumeData = {
       description: 'A lightweight, terminal-based task management tool.',
       url: 'github.com/janedoe/task-cli',
       technologies: ['Rust', 'SQLite'],
-      highlights: [
-        'Achieved 1,000+ stars on GitHub within the first month of release.',
-        'Implemented a custom query language for advanced task filtering.',
-      ],
+      highlights: '<ul><li>Achieved 1,000+ stars on GitHub within the first month of release.</li><li>Implemented a custom query language for advanced task filtering.</li></ul>',
     }
   ],
   skills: [
@@ -123,6 +112,8 @@ const initialData: ResumeData = {
   sectionOrder: ['personal', 'experience', 'education', 'skills', 'projects'],
   theme: {
     accentColor: '#2563eb', // blue-600
+    textColor: '#1f2937', // gray-800
+    headingColor: '#111827', // gray-900
     fontFamily: 'Inter',
     headingFontFamily: 'Inter',
     spacing: 'normal',
@@ -156,7 +147,7 @@ export const useResumeStore = create<ResumeState>((set) => ({
           startDate: '',
           endDate: '',
           current: false,
-          description: [''],
+          description: '',
         }
       ]
     }
@@ -195,7 +186,7 @@ export const useResumeStore = create<ResumeState>((set) => ({
           startDate: '',
           endDate: '',
           percentage: '',
-          description: [],
+          description: '',
         }
       ]
     }
@@ -231,7 +222,7 @@ export const useResumeStore = create<ResumeState>((set) => ({
           description: '',
           url: '',
           technologies: [],
-          highlights: [''],
+          highlights: '',
         }
       ]
     }

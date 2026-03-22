@@ -4,6 +4,7 @@ import { useResumeStore } from '../../store/useResumeStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { RichTextEditor } from './RichTextEditor';
 
 const SortableExperienceItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -52,30 +53,6 @@ export function ExperienceForm() {
       const newIndex = experience.findIndex(e => e.id === over.id);
       reorderExperience(oldIndex, newIndex);
     }
-  };
-
-  const handleBulletChange = (expId: string, index: number, value: string) => {
-    const exp = experience.find(e => e.id === expId);
-    if (!exp) return;
-    
-    const newDesc = [...exp.description];
-    newDesc[index] = value;
-    updateExperience(expId, { description: newDesc });
-  };
-
-  const addBullet = (expId: string) => {
-    const exp = experience.find(e => e.id === expId);
-    if (!exp) return;
-    
-    updateExperience(expId, { description: [...exp.description, ''] });
-  };
-
-  const removeBullet = (expId: string, index: number) => {
-    const exp = experience.find(e => e.id === expId);
-    if (!exp) return;
-    
-    const newDesc = exp.description.filter((_, i) => i !== index);
-    updateExperience(expId, { description: newDesc });
   };
 
   return (
@@ -171,33 +148,13 @@ export function ExperienceForm() {
                   
                   <div className="sm:col-span-2 space-y-3 mt-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-gray-400">Description (Bullet Points)</label>
+                      <label className="text-sm font-medium text-gray-400">Description & Achievements</label>
                     </div>
-                    {exp.description.map((bullet, i) => (
-                      <div key={i} className="flex gap-2 items-start">
-                        <div className="mt-2.5 w-1.5 h-1.5 rounded-full bg-gray-600 shrink-0"></div>
-                        <textarea
-                          value={bullet}
-                          onChange={(e) => handleBulletChange(exp.id, i, e.target.value)}
-                          rows={2}
-                          className="flex-1 px-3 py-2 border border-gray-800 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 bg-[#050505] text-gray-300 resize-y"
-                          placeholder="Describe your achievements..."
-                        />
-                        <button 
-                          onClick={() => removeBullet(exp.id, i)}
-                          className="p-2 text-gray-600 hover:text-red-500 mt-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                    
-                    <button 
-                      onClick={() => addBullet(exp.id)}
-                      className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-500 mt-2"
-                    >
-                      <Plus size={14} /> Add Bullet Point
-                    </button>
+                    <RichTextEditor
+                      value={exp.description}
+                      onChange={(content) => updateExperience(exp.id, { description: content })}
+                      placeholder="Describe your responsibilities and key achievements..."
+                    />
                   </div>
                 </div>
               </SortableExperienceItem>

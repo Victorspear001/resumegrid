@@ -80,7 +80,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       return (
         <h2 
           className="text-lg font-bold uppercase tracking-wider mb-1 pb-1 border-b-2 break-inside-avoid"
-          style={{ color: '#1f2937', borderColor: theme.accentColor, fontFamily: theme.headingFontFamily }}
+          style={{ color: theme.headingColor, borderColor: theme.accentColor, fontFamily: theme.headingFontFamily }}
         >
           {title}
         </h2>
@@ -106,7 +106,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         <div className="flex items-center gap-4 mb-2 break-inside-avoid">
           <h2 
             className="text-lg font-bold uppercase tracking-tight whitespace-nowrap"
-            style={{ color: '#333', fontFamily: theme.headingFontFamily }}
+            style={{ color: theme.headingColor, fontFamily: theme.headingFontFamily }}
           >
             <span style={{ color: theme.accentColor }}>{title.slice(0, 3)}</span>{title.slice(3)}
           </h2>
@@ -183,20 +183,19 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               {experience.map((exp) => (
                 <div key={exp.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
-                    <h3 className="font-bold text-gray-900">{exp.position}</h3>
-                    <span className="text-sm font-medium text-gray-600 shrink-0 ml-4">
+                    <h3 className="font-bold">{exp.position}</h3>
+                    <span className="text-sm font-medium opacity-80 shrink-0 ml-4">
                       {exp.startDate} - {exp.endDate}
                     </span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="font-medium text-gray-700 italic text-sm">{exp.company}</span>
-                    <span className="text-xs text-gray-500 shrink-0 ml-4">{exp.location}</span>
+                    <span className="font-medium italic text-sm opacity-90">{exp.company}</span>
+                    <span className="text-xs opacity-70 shrink-0 ml-4">{exp.location}</span>
                   </div>
-                  <ul className="list-disc list-outside ml-4 space-y-0 text-sm text-gray-800">
-                    {exp.description.map((bullet, i) => (
-                      bullet.trim() && <li key={i} className="pl-1 leading-tight">{bullet}</li>
-                    ))}
-                  </ul>
+                  <div 
+                    className="rich-text-content text-sm"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                 </div>
               ))}
             </div>
@@ -212,16 +211,22 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               {education.map((edu) => (
                 <div key={edu.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
-                    <h3 className="font-bold text-gray-900">{edu.institution}</h3>
-                    <span className="text-sm font-medium text-gray-600 shrink-0 ml-4">
+                    <h3 className="font-bold">{edu.institution}</h3>
+                    <span className="text-sm font-medium opacity-80 shrink-0 ml-4">
                       {edu.startDate} - {edu.endDate}
                     </span>
                   </div>
                   <div className="flex justify-between items-baseline">
-                    <span className="font-medium text-gray-700 italic text-sm">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
-                    <span className="text-xs text-gray-500 shrink-0 ml-4">{edu.location}</span>
+                    <span className="font-medium italic text-sm opacity-90">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
+                    <span className="text-xs opacity-70 shrink-0 ml-4">{edu.location}</span>
                   </div>
                   {edu.percentage && <div className="text-xs text-gray-600">Percentage: {edu.percentage}</div>}
+                  {edu.description && (
+                    <div 
+                      className="rich-text-content text-xs mt-1"
+                      dangerouslySetInnerHTML={{ __html: edu.description }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -250,8 +255,8 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <div className="grid grid-cols-1 gap-1 text-sm">
               {skills.map((category) => (
                 <div key={category.id} className="flex items-start break-inside-avoid">
-                  <span className="font-bold text-gray-900 w-32 shrink-0">{category.name}:</span>
-                  <span className="text-gray-800 leading-tight">{category.skills.join(', ')}</span>
+                  <span className="font-bold w-32 shrink-0">{category.name}:</span>
+                  <span className="leading-tight">{category.skills.join(', ')}</span>
                 </div>
               ))}
             </div>
@@ -268,7 +273,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                 <div key={proj.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-gray-900">{proj.name}</h3>
+                      <h3 className="font-bold">{proj.name}</h3>
                       {proj.url && (
                         <a href={`https://${proj.url.replace(/^https?:\/\//, '')}`} className="text-xs text-blue-600 hover:underline">
                           {proj.url}
@@ -282,11 +287,10 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                       <span className="font-medium">Technologies:</span> {proj.technologies.join(', ')}
                     </div>
                   )}
-                  <ul className="list-disc list-outside ml-4 space-y-0 text-sm text-gray-800">
-                    {proj.highlights.map((bullet, i) => (
-                      bullet.trim() && <li key={i} className="pl-1 leading-tight">{bullet}</li>
-                    ))}
-                  </ul>
+                  <div 
+                    className="rich-text-content text-sm mt-1"
+                    dangerouslySetInnerHTML={{ __html: proj.highlights }}
+                  />
                 </div>
               ))}
             </div>
@@ -304,7 +308,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (template === 'awesome-cv') {
       return (
         <header className="text-center mb-6 break-inside-avoid">
-          <h1 className="text-4xl font-light tracking-tight mb-2" style={{ fontFamily: theme.headingFontFamily }}>
+          <h1 className="text-4xl font-light tracking-tight mb-2" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
             <span className="font-bold">{personalInfo.fullName.split(' ')[0]}</span> {personalInfo.fullName.split(' ').slice(1).join(' ')}
           </h1>
           {personalInfo.jobTitle && (
@@ -312,7 +316,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               {personalInfo.jobTitle}
             </div>
           )}
-          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-xs opacity-80">
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
             {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -326,12 +330,12 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (template === 'deedy') {
       return (
         <header className="mb-6 break-inside-avoid">
-          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-1" style={{ fontFamily: theme.headingFontFamily }}>
+          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-1" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
             {personalInfo.fullName}
           </h1>
           <div className="flex justify-between items-baseline border-b-2 pb-1" style={{ borderColor: theme.accentColor }}>
-            <div className="text-lg font-medium text-gray-600">{personalInfo.jobTitle}</div>
-            <div className="text-xs text-gray-500 space-x-2">
+            <div className="text-lg font-medium opacity-80">{personalInfo.jobTitle}</div>
+            <div className="text-xs opacity-70 space-x-2">
               {personalInfo.email && <span>{personalInfo.email}</span>}
               {personalInfo.phone && <span>| {personalInfo.phone}</span>}
               {personalInfo.location && <span>| {personalInfo.location}</span>}
@@ -402,7 +406,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           <div className="pt-4 pl-4">
             <h1 className="text-6xl font-black tracking-tighter leading-none mb-2" style={{ fontFamily: theme.headingFontFamily }}>
               {personalInfo.fullName.split(' ').map((name, i) => (
-                <span key={i} className={i % 2 === 0 ? 'text-gray-900' : ''} style={i % 2 !== 0 ? { color: theme.accentColor } : {}}>{name} </span>
+                <span key={i} className={i % 2 === 0 ? 'font-bold' : ''} style={i % 2 !== 0 ? { color: theme.accentColor } : {}}>{name} </span>
               ))}
             </h1>
             <div className="text-xl font-bold tracking-[0.2em] uppercase text-gray-400 mb-6">{personalInfo.jobTitle}</div>
@@ -497,8 +501,8 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               )}
               <div className="flex-1 min-w-0 pt-1">
                 <h1 
-                  className="text-3xl font-bold text-gray-900 mb-0.5 tracking-tight uppercase break-words leading-tight"
-                  style={{ fontFamily: theme.headingFontFamily }}
+                  className="text-3xl font-bold mb-0.5 tracking-tight uppercase break-words leading-tight"
+                  style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}
                 >
                   {personalInfo.fullName}
                 </h1>
@@ -509,7 +513,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                 )}
               </div>
             </div>
-            <div className="text-right text-xs text-gray-600 space-y-0 shrink-0 max-w-[40%] break-words pt-1">
+            <div className="text-right text-xs opacity-80 space-y-0 shrink-0 max-w-[40%] break-words pt-1">
               {personalInfo.email && <div>{personalInfo.email}</div>}
               {personalInfo.phone && <div>{personalInfo.phone}</div>}
               {personalInfo.location && <div>{personalInfo.location}</div>}
@@ -540,13 +544,13 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <div className="w-3 shrink-0 mr-4" style={{ backgroundColor: theme.accentColor }}></div>
             <div className="py-1 flex-1 min-w-0">
               <h1 
-                className="text-4xl font-black text-gray-900 mb-1 tracking-tighter break-words leading-tight"
-                style={{ fontFamily: theme.headingFontFamily }}
+                className="text-4xl font-black mb-1 tracking-tighter break-words leading-tight"
+                style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}
               >
                 {personalInfo.fullName}
               </h1>
               {personalInfo.jobTitle && (
-                <div className="text-xl font-light mb-2 text-gray-600 break-words">
+                <div className="text-xl font-light mb-2 opacity-80 break-words">
                   {personalInfo.jobTitle}
                 </div>
               )}
@@ -588,8 +592,8 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           <img src={personalInfo.profilePicture} alt="Profile" className="w-auto h-24 rounded-md object-contain mb-2 shadow-sm" />
         )}
         <h1 
-          className="text-3xl font-bold text-gray-900 mb-0.5 tracking-tight"
-          style={{ fontFamily: theme.headingFontFamily }}
+          className="text-3xl font-bold mb-0.5 tracking-tight"
+          style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}
         >
           {personalInfo.fullName}
         </h1>
@@ -599,7 +603,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           </div>
         )}
         
-        <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-gray-600">
+        <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs opacity-80">
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.email && personalInfo.phone && <span>•</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
@@ -607,7 +611,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           {personalInfo.location && <span>{personalInfo.location}</span>}
         </div>
         
-        <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs text-gray-600 mt-0.5">
+        <div className="flex flex-wrap justify-center items-center gap-x-2 gap-y-0.5 text-xs opacity-80 mt-0.5">
           {personalInfo.website && (
             <a href={`https://${personalInfo.website.replace(/^https?:\/\//, '')}`} className="hover:underline">
               {personalInfo.website}
@@ -648,15 +652,17 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           style={{ 
             padding: `${theme.margin}mm`,
             lineHeight: theme.lineHeight,
+            color: theme.textColor,
           }}
         >
           {renderHeader()}
 
           {/* Summary */}
           {personalInfo.summary && (
-            <div className="mb-4 text-sm text-gray-800 leading-snug text-justify break-inside-avoid">
-              {personalInfo.summary}
-            </div>
+            <div 
+              className="rich-text-content mb-4 text-sm leading-snug text-justify break-inside-avoid"
+              dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
+            />
           )}
 
           {/* Dynamic Sections */}

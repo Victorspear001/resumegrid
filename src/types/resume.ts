@@ -20,7 +20,7 @@ export interface Experience {
   startDate: string;
   endDate: string;
   current: boolean;
-  description: string[]; // Array of bullet points
+  description: string; // Rich text HTML content
 }
 
 export interface Education {
@@ -32,7 +32,7 @@ export interface Education {
   startDate: string;
   endDate: string;
   percentage: string;
-  description: string[];
+  description: string; // Rich text HTML content
 }
 
 export interface Project {
@@ -41,7 +41,7 @@ export interface Project {
   description: string;
   url: string;
   technologies: string[];
-  highlights: string[];
+  highlights: string; // Rich text HTML content
 }
 
 export interface SkillCategory {
@@ -52,6 +52,8 @@ export interface SkillCategory {
 
 export interface ResumeTheme {
   accentColor: string;
+  textColor: string;
+  headingColor: string;
   fontFamily: string;
   headingFontFamily: string;
   spacing: 'compact' | 'normal' | 'spacious';

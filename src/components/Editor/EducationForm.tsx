@@ -4,6 +4,7 @@ import { useResumeStore } from '../../store/useResumeStore';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { RichTextEditor } from './RichTextEditor';
 
 const SortableEducationItem: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
@@ -150,6 +151,17 @@ export function EducationForm() {
                       value={edu.percentage}
                       onChange={(e) => updateEducation(edu.id, { percentage: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-800 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 bg-[#050505] text-gray-300"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-3 mt-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium text-gray-400">Description (Optional)</label>
+                    </div>
+                    <RichTextEditor
+                      value={edu.description}
+                      onChange={(content) => updateEducation(edu.id, { description: content })}
+                      placeholder="Add honors, relevant coursework, or other details..."
                     />
                   </div>
                 </div>

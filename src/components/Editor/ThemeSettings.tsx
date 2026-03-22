@@ -21,6 +21,14 @@ export function ThemeSettings() {
     { name: 'JetBrains Mono', value: '"JetBrains Mono", monospace' },
   ];
 
+  const textColors = [
+    { name: 'Dark Gray', value: '#1f2937' },
+    { name: 'Black', value: '#000000' },
+    { name: 'Gray', value: '#4b5563' },
+    { name: 'Blue Gray', value: '#334155' },
+    { name: 'Deep Blue', value: '#1e3a8a' },
+  ];
+
   return (
     <section id="theme-settings" className="space-y-6 bg-[#050505] p-6 rounded-lg border border-gray-800 shadow-[0_0_15px_rgba(0,0,0,0.5)] animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
       <div className="border-b border-gray-800 pb-4">
@@ -42,6 +50,54 @@ export function ThemeSettings() {
                 title={color.name}
               />
             ))}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Text Color</label>
+          <div className="flex flex-wrap gap-2">
+            {textColors.map((color) => (
+              <button
+                key={color.value}
+                onClick={() => updateTheme({ textColor: color.value })}
+                className={`w-8 h-8 rounded-full border-2 transition-all duration-300 hover:scale-110 ${
+                  theme.textColor === color.value ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: color.value }}
+                title={color.name}
+              />
+            ))}
+            <input 
+              type="color" 
+              value={theme.textColor} 
+              onChange={(e) => updateTheme({ textColor: e.target.value })}
+              className="w-8 h-8 rounded-full bg-transparent border-none cursor-pointer p-0 overflow-hidden"
+              title="Custom Color"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Heading Color</label>
+          <div className="flex flex-wrap gap-2">
+            {textColors.map((color) => (
+              <button
+                key={color.value}
+                onClick={() => updateTheme({ headingColor: color.value })}
+                className={`w-8 h-8 rounded-full border-2 transition-all duration-300 hover:scale-110 ${
+                  theme.headingColor === color.value ? 'border-white scale-110 shadow-[0_0_10px_rgba(255,255,255,0.3)]' : 'border-transparent'
+                }`}
+                style={{ backgroundColor: color.value }}
+                title={color.name}
+              />
+            ))}
+            <input 
+              type="color" 
+              value={theme.headingColor} 
+              onChange={(e) => updateTheme({ headingColor: e.target.value })}
+              className="w-8 h-8 rounded-full bg-transparent border-none cursor-pointer p-0 overflow-hidden"
+              title="Custom Color"
+            />
           </div>
         </div>
 

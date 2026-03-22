@@ -1,6 +1,7 @@
 import React from 'react';
 import { useResumeStore } from '../../store/useResumeStore';
 import { User, Upload, Trash2 } from 'lucide-react';
+import { RichTextEditor } from './RichTextEditor';
 
 export function PersonalInfoForm() {
   const { data, updatePersonalInfo } = useResumeStore();
@@ -314,13 +315,9 @@ export function PersonalInfoForm() {
           <div className="flex justify-between items-center">
             <label htmlFor="summary" className="text-xs font-bold text-gray-400 uppercase tracking-wider">Professional Summary</label>
           </div>
-          <textarea
-            id="summary"
-            name="summary"
-            rows={4}
+          <RichTextEditor
             value={personalInfo.summary}
-            onChange={handleChange}
-            className="w-full px-4 py-2 bg-black border border-gray-800 rounded-md text-gray-100 focus:outline-none focus:ring-1 focus:ring-neon-blue focus:border-neon-blue transition-all duration-300 resize-y"
+            onChange={(content) => updatePersonalInfo({ summary: content })}
             placeholder="Briefly describe your professional background and key strengths..."
           />
         </div>
