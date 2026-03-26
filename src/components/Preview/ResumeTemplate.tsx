@@ -660,7 +660,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           {/* Summary */}
           {personalInfo.summary && (
             <div 
-              className="rich-text-content mb-4 text-sm leading-snug text-justify break-inside-avoid"
+              className="rich-text-content mb-4 text-sm leading-snug break-inside-avoid"
               dangerouslySetInnerHTML={{ __html: personalInfo.summary }}
             />
           )}

@@ -9,7 +9,18 @@ export default function App() {
 
   useEffect(() => {
     // Initialize the database table if it doesn't exist
-    fetch('/api/init-db', { method: 'POST' }).catch(console.error);
+    const url = localStorage.getItem('TURSO_DATABASE_URL') || '';
+    const token = localStorage.getItem('TURSO_AUTH_TOKEN') || '';
+    
+    if (url && token) {
+      fetch('/api/init-db', { 
+        method: 'POST',
+        headers: {
+          'x-turso-url': url,
+          'x-turso-token': token
+        }
+      }).catch(console.error);
+    }
   }, []);
 
   return (

@@ -6,16 +6,22 @@ export function AutoSaver() {
   const { data, resumeId } = useResumeStore();
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialMount = useRef(true);
 
   const saveToCloud = async () => {
     setStatus('saving');
     try {
+      const url = localStorage.getItem('TURSO_DATABASE_URL') || '';
+      const token = localStorage.getItem('TURSO_AUTH_TOKEN') || '';
+      
       const response = await fetch('/api/resumes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-turso-url': url,
+          'x-turso-token': token
         },
         body: JSON.stringify({
           id: resumeId,
@@ -24,16 +30,24 @@ export function AutoSaver() {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to save');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        if (errorData?.error?.includes('401') || errorData?.error?.includes('SERVER_ERROR')) {
+          throw new Error('Database Auth Token Expired');
+        }
+        throw new Error('Failed to save');
+      }
       
       setStatus('saved');
       setLastSaved(new Date());
+      setErrorMessage(null);
       
       // Reset to idle after 3 seconds
       setTimeout(() => setStatus('idle'), 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Auto-save error:', error);
       setStatus('error');
+      setErrorMessage(error.message || 'Save failed');
     }
   };
 
@@ -86,7 +100,9 @@ export function AutoSaver() {
       {status === 'error' && (
         <>
           <CloudOff size={14} className="text-red-500" />
-          <span className="text-xs font-medium text-red-500">Save failed</span>
+          <span className="text-xs font-medium text-red-500" title={errorMessage || 'Save failed'}>
+            {errorMessage === 'Database Auth Token Expired' ? 'Auth Token Expired' : 'Save failed'}
+          </span>
         </>
       )}
     </div>

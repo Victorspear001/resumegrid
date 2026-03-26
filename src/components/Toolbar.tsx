@@ -1,8 +1,9 @@
-import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Cloud, UploadCloud, DownloadCloud, Upload } from 'lucide-react';
+import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Cloud, UploadCloud, DownloadCloud, Upload, Database } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
 import { toJpeg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
+import { SettingsModal } from './SettingsModal';
 
 interface ToolbarProps {
   isDistractionFree: boolean;
@@ -14,6 +15,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [showCloudMenu, setShowCloudMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [savedResumes, setSavedResumes] = useState<any[]>([]);
@@ -21,6 +23,16 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   const templatesRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
   const cloudMenuRef = useRef<HTMLDivElement>(null);
+
+  const getHeaders = () => {
+    const url = localStorage.getItem('TURSO_DATABASE_URL') || '';
+    const token = localStorage.getItem('TURSO_AUTH_TOKEN') || '';
+    return {
+      'Content-Type': 'application/json',
+      'x-turso-url': url,
+      'x-turso-token': token
+    };
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -40,10 +52,12 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
 
   const fetchSavedResumes = async () => {
     try {
-      const res = await fetch('/api/resumes');
+      const res = await fetch('/api/resumes', { headers: getHeaders() });
       if (res.ok) {
         const list = await res.json();
         setSavedResumes(list);
+      } else if (res.status === 401 || res.status === 400) {
+        setShowSettingsModal(true);
       }
     } catch (err) {
       console.error("Failed to fetch resumes", err);
@@ -55,19 +69,27 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
     try {
       const res = await fetch('/api/resumes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({
           id: resumeId,
           title: data.personalInfo.fullName || 'Untitled Resume',
           data: data
         })
       });
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 400) {
+          setShowSettingsModal(true);
+          throw new Error('Database credentials missing or invalid');
+        }
+        throw new Error('Failed to save');
+      }
       alert('Resume saved to cloud successfully!');
       fetchSavedResumes();
     } catch (error: any) {
       console.error('Save error:', error);
-      alert(`Error saving to cloud: ${error.message}`);
+      if (error.message !== 'Database credentials missing or invalid') {
+        alert(`Error saving to cloud: ${error.message}`);
+      }
     } finally {
       setIsSaving(false);
       setShowCloudMenu(false);
@@ -77,7 +99,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   const handleLoadFromCloud = async (id: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/resumes/${id}`);
+      const res = await fetch(`/api/resumes/${id}`, { headers: getHeaders() });
       if (!res.ok) throw new Error('Failed to load');
       const result = await res.json();
       const parsedData = JSON.parse(result.data);
@@ -407,7 +429,20 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
             </div>
           )}
         </div>
+
+        <button 
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-blue hover:bg-gray-900 rounded-md transition-all duration-300 ml-1"
+          onClick={() => setShowSettingsModal(true)}
+          title="Database Settings"
+        >
+          <Database size={16} />
+        </button>
       </div>
+
+      <SettingsModal 
+        isOpen={showSettingsModal} 
+        onClose={() => setShowSettingsModal(false)} 
+      />
     </header>
   );
 }
