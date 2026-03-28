@@ -1,27 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Editor } from './components/Editor';
 import { Preview } from './components/Preview';
 import { Toolbar } from './components/Toolbar';
-import { AutoSaver } from './components/AutoSaver';
 
 export default function App() {
   const [isDistractionFree, setIsDistractionFree] = useState(false);
-
-  useEffect(() => {
-    // Initialize the database table if it doesn't exist
-    const url = localStorage.getItem('TURSO_DATABASE_URL') || '';
-    const token = localStorage.getItem('TURSO_AUTH_TOKEN') || '';
-    
-    if (url && token) {
-      fetch('/api/init-db', { 
-        method: 'POST',
-        headers: {
-          'x-turso-url': url,
-          'x-turso-token': token
-        }
-      }).catch(console.error);
-    }
-  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-black text-gray-100 overflow-hidden font-sans">
@@ -43,8 +26,6 @@ export default function App() {
           </div>
         )}
       </main>
-
-      <AutoSaver />
     </div>
   );
 }

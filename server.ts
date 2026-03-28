@@ -1,14 +1,10 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import apiApp from "./api/index.js";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
-
-  // Mount API routes
-  app.use(apiApp);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

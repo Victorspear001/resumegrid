@@ -1,9 +1,8 @@
-import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Cloud, UploadCloud, DownloadCloud, Upload, Database } from 'lucide-react';
+import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
 import { toJpeg } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import { SettingsModal } from './SettingsModal';
 
 interface ToolbarProps {
   isDistractionFree: boolean;
@@ -14,25 +13,9 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
   const { resumeId, data, updateTheme, loadData, setResumeId } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
-  const [showCloudMenu, setShowCloudMenu] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [savedResumes, setSavedResumes] = useState<any[]>([]);
   
   const templatesRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
-  const cloudMenuRef = useRef<HTMLDivElement>(null);
-
-  const getHeaders = () => {
-    const url = localStorage.getItem('TURSO_DATABASE_URL') || '';
-    const token = localStorage.getItem('TURSO_AUTH_TOKEN') || '';
-    return {
-      'Content-Type': 'application/json',
-      'x-turso-url': url,
-      'x-turso-token': token
-    };
-  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -42,84 +25,10 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
         setShowDownloadMenu(false);
       }
-      if (cloudMenuRef.current && !cloudMenuRef.current.contains(event.target as Node)) {
-        setShowCloudMenu(false);
-      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const fetchSavedResumes = async () => {
-    try {
-      const res = await fetch('/api/resumes', { headers: getHeaders() });
-      if (res.ok) {
-        const list = await res.json();
-        setSavedResumes(list);
-      } else if (res.status === 401 || res.status === 400) {
-        setShowSettingsModal(true);
-      }
-    } catch (err) {
-      console.error("Failed to fetch resumes", err);
-    }
-  };
-
-  const handleSaveToCloud = async () => {
-    setIsSaving(true);
-    try {
-      const res = await fetch('/api/resumes', {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify({
-          id: resumeId,
-          title: data.personalInfo.fullName || 'Untitled Resume',
-          data: data
-        })
-      });
-      if (!res.ok) {
-        if (res.status === 401 || res.status === 400) {
-          setShowSettingsModal(true);
-          throw new Error('Database credentials missing or invalid');
-        }
-        throw new Error('Failed to save');
-      }
-      alert('Resume saved to cloud successfully!');
-      fetchSavedResumes();
-    } catch (error: any) {
-      console.error('Save error:', error);
-      if (error.message !== 'Database credentials missing or invalid') {
-        alert(`Error saving to cloud: ${error.message}`);
-      }
-    } finally {
-      setIsSaving(false);
-      setShowCloudMenu(false);
-    }
-  };
-
-  const handleLoadFromCloud = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/resumes/${id}`, { headers: getHeaders() });
-      if (!res.ok) throw new Error('Failed to load');
-      const result = await res.json();
-      const parsedData = JSON.parse(result.data);
-      loadData(parsedData);
-      setResumeId(id);
-      setShowCloudMenu(false);
-    } catch (error: any) {
-      console.error('Load error:', error);
-      alert(`Error loading from cloud: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCloudMenuToggle = () => {
-    if (!showCloudMenu) {
-      fetchSavedResumes();
-    }
-    setShowCloudMenu(!showCloudMenu);
-  };
 
   const generateImage = async () => {
     const element = document.getElementById('resume-preview-template');
@@ -350,54 +259,6 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
           <span className="hidden sm:inline">Design</span>
         </button>
 
-        <div className="relative" ref={cloudMenuRef}>
-          <button 
-            onClick={handleCloudMenuToggle}
-            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${showCloudMenu ? 'bg-gray-900 text-neon-purple shadow-[0_0_10px_rgba(188,19,254,0.2)]' : 'text-gray-400 hover:text-neon-purple hover:bg-gray-900'}`}
-          >
-            <Cloud size={16} />
-            <span className="hidden sm:inline">Cloud</span>
-            <ChevronDown size={14} className={`transition-transform duration-300 ${showCloudMenu ? 'rotate-180' : ''}`} />
-          </button>
-
-          {showCloudMenu && (
-            <div className="absolute top-full right-0 mt-1 w-64 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="p-2 max-h-60 overflow-y-auto custom-scrollbar">
-                <div className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] px-3 mb-2 mt-1">
-                  Saved Resumes
-                </div>
-                {savedResumes.length === 0 ? (
-                  <div className="text-xs text-gray-500 px-3 py-4 italic text-center">No saved resumes found.</div>
-                ) : (
-                  savedResumes.map((resume) => (
-                    <button
-                      key={resume.id}
-                      onClick={() => handleLoadFromCloud(resume.id)}
-                      disabled={isLoading}
-                      className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 disabled:opacity-50 group"
-                    >
-                      <DownloadCloud size={14} className="text-gray-600 group-hover:text-neon-purple shrink-0 transition-colors" />
-                      <div className="truncate">
-                        <div className="font-semibold truncate group-hover:text-white transition-colors">{resume.title}</div>
-                        <div className="text-[10px] text-gray-600">{new Date(resume.updated_at).toLocaleDateString()}</div>
-                      </div>
-                    </button>
-                  ))
-                )}
-                <div className="border-t border-gray-800 mt-2 pt-2 px-2">
-                  <button 
-                    onClick={handleSaveToCloud}
-                    disabled={isSaving}
-                    className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-neon-purple hover:bg-neon-purple/10 rounded-md transition-all duration-300 disabled:opacity-50"
-                  >
-                    {isSaving ? 'Saving...' : 'Save Current to Cloud'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
         <div className="relative" ref={downloadMenuRef}>
           <button 
             onClick={() => setShowDownloadMenu(!showDownloadMenu)}
@@ -429,20 +290,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
             </div>
           )}
         </div>
-
-        <button 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-blue hover:bg-gray-900 rounded-md transition-all duration-300 ml-1"
-          onClick={() => setShowSettingsModal(true)}
-          title="Database Settings"
-        >
-          <Database size={16} />
-        </button>
       </div>
-
-      <SettingsModal 
-        isOpen={showSettingsModal} 
-        onClose={() => setShowSettingsModal(false)} 
-      />
     </header>
   );
 }

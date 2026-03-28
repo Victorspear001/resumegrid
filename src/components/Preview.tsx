@@ -31,7 +31,7 @@ export function Preview() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full w-full relative">
+    <div className="flex flex-col h-full w-full relative bg-gray-100">
       {/* Zoom Controls */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-1 bg-white rounded-md shadow-sm border border-gray-200 p-1">
         <button 
@@ -64,13 +64,14 @@ export function Preview() {
       {/* Preview Container */}
       <div 
         ref={containerRef}
-        className="flex-1 overflow-auto flex justify-center items-start pt-16 pb-16 px-4"
+        className="flex-1 overflow-auto flex justify-center items-start p-8"
       >
         <div 
           style={{ 
             transform: `scale(${scale})`, 
             transformOrigin: 'top center',
-            transition: 'transform 0.2s ease-out'
+            transition: 'transform 0.2s ease-out',
+            width: '210mm',
           }}
         >
           <ResumeTemplate ref={componentRef} />

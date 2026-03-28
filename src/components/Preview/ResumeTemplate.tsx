@@ -7,62 +7,9 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
   const { data } = useResumeStore();
   const { personalInfo, experience, education, skills, projects, sectionOrder, theme } = data;
 
-  // Pagination logic to perfectly align content across multiple pages
-  useEffect(() => {
-    const container = document.getElementById('resume-preview-template');
-    if (!container) return;
-
-    const paginate = () => {
-      // Remove old spacers
-      const oldSpacers = container.querySelectorAll('.page-break-spacer');
-      oldSpacers.forEach(spacer => spacer.remove());
-
-      const elements = container.querySelectorAll('.break-inside-avoid');
-      
-      // Calculate A4 page height in pixels based on current container width
-      const pageHeightPx = container.offsetWidth * (297 / 210);
-      
-      const getOffsetTop = (element: HTMLElement): number => {
-        let offsetTop = 0;
-        let current: HTMLElement | null = element;
-        while (current && current !== container) {
-          offsetTop += current.offsetTop;
-          current = current.offsetParent as HTMLElement;
-        }
-        return offsetTop;
-      };
-
-      elements.forEach((el: any) => {
-        const top = getOffsetTop(el);
-        const height = el.offsetHeight;
-        const bottom = top + height;
-
-        const pageNumber = Math.floor(top / pageHeightPx);
-        const paddingPx = container.offsetWidth * (theme.margin / 210); 
-        
-        // The safe bottom limit for the current page (page height - bottom padding)
-        const safeBottom = (pageNumber * pageHeightPx) + (pageHeightPx - paddingPx);
-
-        // If element crosses the safe bottom boundary and fits on a single page
-        if (bottom > safeBottom && height < (pageHeightPx - 2 * paddingPx)) {
-          const nextPageTop = (pageNumber + 1) * pageHeightPx;
-          // Calculate push amount to move element to the next page with top padding
-          const pushAmount = nextPageTop - top + paddingPx;
-          
-          const spacer = document.createElement('div');
-          spacer.className = 'page-break-spacer';
-          spacer.style.height = `${pushAmount}px`;
-          spacer.style.width = '100%';
-          
-          el.parentNode.insertBefore(spacer, el);
-        }
-      });
-    };
-
-    const timeoutId = setTimeout(paginate, 100);
-    return () => clearTimeout(timeoutId);
-  }, [data, theme.margin, theme.spacing, theme.template, theme.lineHeight]);
-
+  // Pagination logic removed as per user request to let height adjust automatically
+  // and use a fixed margin/line-height.
+  
   // Spacing classes based on theme
   const spacingClasses = {
     compact: 'space-y-1',
@@ -636,23 +583,22 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         id="resume-preview-template"
         ref={ref}
         className={cn(
-          "bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 relative transition-all duration-300"
+          "bg-white shadow-2xl mx-auto print:shadow-none print:mx-0 relative transition-all duration-300 print:bg-none"
         )}
         style={{ 
           width: '210mm', // A4 width
           minHeight: '297mm', // A4 height
+          height: 'auto',
           fontFamily: theme.fontFamily,
-          // Draw a subtle dashed line at every A4 page boundary (297mm)
-          backgroundImage: 'linear-gradient(to bottom, transparent 296.5mm, #cbd5e1 296.5mm, #cbd5e1 297mm)',
-          backgroundSize: '100% 297mm',
         }}
       >
         <div 
-          className="w-full origin-top-left"
+          className="w-full min-h-full break-words"
           style={{ 
-            padding: `${theme.margin}mm`,
-            lineHeight: theme.lineHeight,
+            padding: '15mm',
+            lineHeight: 1.5,
             color: theme.textColor,
+            boxSizing: 'border-box',
           }}
         >
           {renderHeader()}
@@ -680,22 +626,6 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               {sectionOrder.map(renderSection)}
             </div>
           )}
-        </div>
-      </div>
-      
-      {/* Page break labels */}
-      <div className="absolute top-0 left-0 bottom-0 w-full pointer-events-none overflow-hidden">
-        <div className="mx-auto relative" style={{ width: '210mm', height: '100%' }}>
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div 
-              key={i} 
-              className="absolute left-full ml-4 text-xs font-medium text-slate-400 whitespace-nowrap flex items-center gap-2"
-              style={{ top: `calc(${297 * (i + 1)}mm - 8px)` }}
-            >
-              <div className="w-4 h-px bg-slate-300"></div>
-              Page {i + 2} starts here
-            </div>
-          ))}
         </div>
       </div>
     </div>

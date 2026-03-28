@@ -147,38 +147,6 @@ export function ThemeSettings() {
             ))}
           </select>
         </div>
-
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex justify-between">
-            <span>Margin (mm)</span>
-            <span className="text-neon-purple">{theme.margin}mm</span>
-          </label>
-          <input
-            type="range"
-            min="4"
-            max="40"
-            step="1"
-            value={theme.margin}
-            onChange={(e) => updateTheme({ margin: parseInt(e.target.value) })}
-            className="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-neon-purple"
-          />
-        </div>
-
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-gray-400 uppercase tracking-wider flex justify-between">
-            <span>Line Height</span>
-            <span className="text-neon-purple">{theme.lineHeight}</span>
-          </label>
-          <input
-            type="range"
-            min="1"
-            max="2"
-            step="0.1"
-            value={theme.lineHeight}
-            onChange={(e) => updateTheme({ lineHeight: parseFloat(e.target.value) })}
-            className="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-neon-purple"
-          />
-        </div>
       </div>
     </section>
   );
