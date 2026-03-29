@@ -140,7 +140,6 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
       category: 'Professional',
       items: [
         { id: 'awesome-cv', name: 'Awesome CV', description: 'Highly customizable, clean LaTeX style.' },
-        { id: 'deedy', name: 'Deedy', description: 'Two-column, academic layout.' },
         { id: 'executive', name: 'Executive', description: 'Traditional and professional corporate style.' },
       ]
     },

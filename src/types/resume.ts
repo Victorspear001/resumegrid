@@ -59,7 +59,7 @@ export interface ResumeTheme {
   spacing: 'compact' | 'normal' | 'spacious';
   template: 
     | 'minimal' | 'executive' | 'creative'
-    | 'awesome-cv' | 'deedy' | 'monochrome' | 'modern-cv';
+    | 'awesome-cv' | 'monochrome' | 'modern-cv';
   margin: number; // in mm
   lineHeight: number; // multiplier
 }

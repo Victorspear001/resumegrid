@@ -62,17 +62,6 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       );
     }
 
-    if (template === 'deedy') {
-      return (
-        <h2 
-          className="text-base font-bold uppercase tracking-widest mb-1 break-inside-avoid"
-          style={{ color: theme.accentColor, fontFamily: theme.headingFontFamily }}
-        >
-          {title}
-        </h2>
-      );
-    }
-
     // Minimal (default)
     return (
       <h2 
@@ -220,24 +209,6 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             {personalInfo.location && <span>{personalInfo.location}</span>}
             {personalInfo.website && <span>{personalInfo.website}</span>}
             {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
-          </div>
-        </header>
-      );
-    }
-
-    if (template === 'deedy') {
-      return (
-        <header className="mb-6 break-inside-avoid">
-          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-1 break-words leading-tight" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
-            {personalInfo.fullName}
-          </h1>
-          <div className="flex justify-between items-baseline border-b-2 pb-1 gap-4" style={{ borderColor: theme.accentColor }}>
-            <div className="text-lg font-medium opacity-80 min-w-0 flex-1 break-words">{personalInfo.jobTitle}</div>
-            <div className="text-xs opacity-70 flex flex-wrap justify-end gap-x-2 shrink-0">
-              {personalInfo.email && <span>{personalInfo.email}</span>}
-              {personalInfo.phone && <span>| {personalInfo.phone}</span>}
-              {personalInfo.location && <span>| {personalInfo.location}</span>}
-            </div>
           </div>
         </header>
       );
@@ -417,8 +388,6 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     );
   };
 
-  const isTwoColumn = ['deedy'].includes(theme.template);
-
   return (
     <div className="relative group pb-12">
       <div 
@@ -454,20 +423,9 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
           )}
 
           {/* Dynamic Sections */}
-          {isTwoColumn ? (
-            <div className="grid grid-cols-[1fr_2fr] gap-8">
-              <div className={cn("flex flex-col", sectionSpacing)}>
-                {sectionOrder.filter(s => ['skills', 'education'].includes(s)).map(renderSection)}
-              </div>
-              <div className={cn("flex flex-col", sectionSpacing)}>
-                {sectionOrder.filter(s => !['skills', 'education'].includes(s)).map(renderSection)}
-              </div>
-            </div>
-          ) : (
-            <div className={cn("flex flex-col", sectionSpacing)}>
-              {sectionOrder.map(renderSection)}
-            </div>
-          )}
+          <div className={cn("flex flex-col", sectionSpacing)}>
+            {sectionOrder.map(renderSection)}
+          </div>
         </div>
       </div>
     </div>
