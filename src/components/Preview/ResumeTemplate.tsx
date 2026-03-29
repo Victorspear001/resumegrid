@@ -34,7 +34,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       );
     }
     
-    if (template === 'creative' || template === 'visionary' || template === 'spark') {
+    if (template === 'creative') {
       return (
         <div className="flex items-center gap-2 mb-1 break-inside-avoid">
           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.accentColor }}></div>
@@ -62,46 +62,11 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       );
     }
 
-    if (template === 'deedy' || template === 'plasmati') {
+    if (template === 'deedy') {
       return (
         <h2 
           className="text-base font-bold uppercase tracking-widest mb-1 break-inside-avoid"
           style={{ color: theme.accentColor, fontFamily: theme.headingFontFamily }}
-        >
-          {title}
-        </h2>
-      );
-    }
-
-    if (template === 'alta-cv') {
-      return (
-        <div className="mb-2 break-inside-avoid">
-          <h2 
-            className="text-sm font-black uppercase tracking-widest inline-block px-2 py-0.5 text-white"
-            style={{ backgroundColor: theme.accentColor, fontFamily: theme.headingFontFamily }}
-          >
-            {title}
-          </h2>
-        </div>
-      );
-    }
-
-    if (template === 'calligraphic') {
-      return (
-        <h2 
-          className="text-2xl italic font-serif mb-2 border-b break-inside-avoid"
-          style={{ color: theme.accentColor, borderColor: `${theme.accentColor}40`, fontFamily: '"Playfair Display", serif' }}
-        >
-          {title}
-        </h2>
-      );
-    }
-
-    if (template === 'pastel') {
-      return (
-        <h2 
-          className="text-lg font-bold mb-2 px-3 py-1 rounded-r-full inline-block break-inside-avoid"
-          style={{ backgroundColor: `${theme.accentColor}15`, color: theme.accentColor, fontFamily: theme.headingFontFamily }}
         >
           {title}
         </h2>
@@ -129,15 +94,15 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <div className={cn("flex flex-col", itemSpacing)}>
               {experience.map((exp) => (
                 <div key={exp.id} className="break-inside-avoid">
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-bold">{exp.position}</h3>
-                    <span className="text-sm font-medium opacity-80 shrink-0 ml-4">
+                  <div className="flex justify-between items-baseline gap-4">
+                    <h3 className="font-bold min-w-0 flex-1 break-words">{exp.position}</h3>
+                    <span className="text-sm font-medium opacity-80 shrink-0">
                       {exp.startDate} - {exp.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-medium italic text-sm opacity-90">{exp.company}</span>
-                    <span className="text-xs opacity-70 shrink-0 ml-4">{exp.location}</span>
+                  <div className="flex justify-between items-baseline gap-4">
+                    <span className="font-medium italic text-sm opacity-90 min-w-0 flex-1 break-words">{exp.company}</span>
+                    <span className="text-xs opacity-70 shrink-0">{exp.location}</span>
                   </div>
                   <div 
                     className="rich-text-content text-sm"
@@ -157,15 +122,15 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <div className={cn("flex flex-col", itemSpacing)}>
               {education.map((edu) => (
                 <div key={edu.id} className="break-inside-avoid">
-                  <div className="flex justify-between items-baseline">
-                    <h3 className="font-bold">{edu.institution}</h3>
-                    <span className="text-sm font-medium opacity-80 shrink-0 ml-4">
+                  <div className="flex justify-between items-baseline gap-4">
+                    <h3 className="font-bold min-w-0 flex-1 break-words">{edu.institution}</h3>
+                    <span className="text-sm font-medium opacity-80 shrink-0">
                       {edu.startDate} - {edu.endDate}
                     </span>
                   </div>
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-medium italic text-sm opacity-90">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
-                    <span className="text-xs opacity-70 shrink-0 ml-4">{edu.location}</span>
+                  <div className="flex justify-between items-baseline gap-4">
+                    <span className="font-medium italic text-sm opacity-90 min-w-0 flex-1 break-words">{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ''}</span>
+                    <span className="text-xs opacity-70 shrink-0">{edu.location}</span>
                   </div>
                   {edu.percentage && <div className="text-xs text-gray-600">Percentage: {edu.percentage}</div>}
                   {edu.description && (
@@ -182,28 +147,14 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
 
       case 'skills':
         if (skills.length === 0) return null;
-        if (theme.template === 'alta-cv') {
-          return (
-            <div key="skills" className={sectionSpacing}>
-              {renderSectionHeader('Skills')}
-              <div className="flex flex-wrap gap-2">
-                {skills.flatMap(cat => cat.skills).map((skill, i) => (
-                  <span key={i} className="px-2 py-1 bg-gray-100 text-[10px] font-bold uppercase tracking-wider rounded border" style={{ borderColor: `${theme.accentColor}40`, color: theme.accentColor }}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-          );
-        }
         return (
           <div key="skills" className={sectionSpacing}>
             {renderSectionHeader('Skills')}
             <div className="grid grid-cols-1 gap-1 text-sm">
               {skills.map((category) => (
-                <div key={category.id} className="flex items-start break-inside-avoid">
-                  <span className="font-bold w-32 shrink-0">{category.name}:</span>
-                  <span className="leading-tight">{category.skills.join(', ')}</span>
+                <div key={category.id} className="flex items-start break-inside-avoid gap-2">
+                  <span className="font-bold w-32 shrink-0 break-words">{category.name}:</span>
+                  <span className="leading-tight flex-1 min-w-0 break-words">{category.skills.join(', ')}</span>
                 </div>
               ))}
             </div>
@@ -218,19 +169,19 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <div className={cn("flex flex-col", itemSpacing)}>
               {projects.map((proj) => (
                 <div key={proj.id} className="break-inside-avoid">
-                  <div className="flex justify-between items-baseline">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold">{proj.name}</h3>
+                  <div className="flex justify-between items-baseline gap-4">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <h3 className="font-bold shrink-0">{proj.name}</h3>
                       {proj.url && (
-                        <a href={`https://${proj.url.replace(/^https?:\/\//, '')}`} className="text-xs text-blue-600 hover:underline">
+                        <a href={`https://${proj.url.replace(/^https?:\/\//, '')}`} className="text-xs text-blue-600 hover:underline truncate min-w-0">
                           {proj.url}
                         </a>
                       )}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-700 italic">{proj.description}</div>
+                  <div className="text-sm text-gray-700 italic break-words">{proj.description}</div>
                   {proj.technologies.length > 0 && (
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-gray-600 break-words">
                       <span className="font-medium">Technologies:</span> {proj.technologies.join(', ')}
                     </div>
                   )}
@@ -255,15 +206,15 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (template === 'awesome-cv') {
       return (
         <header className="text-center mb-6 break-inside-avoid">
-          <h1 className="text-4xl font-light tracking-tight mb-2" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
+          <h1 className="text-4xl font-light tracking-tight mb-2 break-words leading-tight" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
             <span className="font-bold">{personalInfo.fullName.split(' ')[0]}</span> {personalInfo.fullName.split(' ').slice(1).join(' ')}
           </h1>
           {personalInfo.jobTitle && (
-            <div className="text-lg font-medium uppercase tracking-widest mb-3" style={{ color: theme.accentColor }}>
+            <div className="text-lg font-medium uppercase tracking-widest mb-3 break-words" style={{ color: theme.accentColor }}>
               {personalInfo.jobTitle}
             </div>
           )}
-          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-xs opacity-80">
+          <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-1 text-xs opacity-80 break-words">
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
             {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -277,12 +228,12 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (template === 'deedy') {
       return (
         <header className="mb-6 break-inside-avoid">
-          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-1" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
+          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-1 break-words leading-tight" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
             {personalInfo.fullName}
           </h1>
-          <div className="flex justify-between items-baseline border-b-2 pb-1" style={{ borderColor: theme.accentColor }}>
-            <div className="text-lg font-medium opacity-80">{personalInfo.jobTitle}</div>
-            <div className="text-xs opacity-70 space-x-2">
+          <div className="flex justify-between items-baseline border-b-2 pb-1 gap-4" style={{ borderColor: theme.accentColor }}>
+            <div className="text-lg font-medium opacity-80 min-w-0 flex-1 break-words">{personalInfo.jobTitle}</div>
+            <div className="text-xs opacity-70 flex flex-wrap justify-end gap-x-2 shrink-0">
               {personalInfo.email && <span>{personalInfo.email}</span>}
               {personalInfo.phone && <span>| {personalInfo.phone}</span>}
               {personalInfo.location && <span>| {personalInfo.location}</span>}
@@ -292,51 +243,12 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       );
     }
 
-    if (template === 'calligraphic') {
-      return (
-        <header className="text-center mb-8 break-inside-avoid">
-          <h1 className="text-5xl italic font-serif mb-2" style={{ fontFamily: '"Playfair Display", serif', color: theme.accentColor }}>
-            {personalInfo.fullName}
-          </h1>
-          <div className="h-px w-32 bg-gray-300 mx-auto mb-4"></div>
-          <div className="text-sm tracking-[0.3em] uppercase text-gray-500 mb-4">{personalInfo.jobTitle}</div>
-          <div className="flex justify-center gap-6 text-xs italic text-gray-600 font-serif">
-            {personalInfo.email && <span>{personalInfo.email}</span>}
-            {personalInfo.phone && <span>{personalInfo.phone}</span>}
-            {personalInfo.location && <span>{personalInfo.location}</span>}
-          </div>
-        </header>
-      );
-    }
-
-    if (template === 'pastel') {
-      return (
-        <header className="mb-8 flex items-center gap-8 break-inside-avoid">
-          {personalInfo.profilePicture && (
-            <img src={personalInfo.profilePicture} alt="Profile" className="w-32 h-32 rounded-2xl object-cover shadow-lg" />
-          )}
-          <div className="flex-1">
-            <h1 className="text-4xl font-black mb-1" style={{ color: '#333', fontFamily: theme.headingFontFamily }}>
-              {personalInfo.fullName}
-            </h1>
-            <div className="text-xl font-medium mb-4" style={{ color: theme.accentColor }}>{personalInfo.jobTitle}</div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
-              {personalInfo.email && <div className="flex items-center gap-2"><span>✉</span> {personalInfo.email}</div>}
-              {personalInfo.phone && <div className="flex items-center gap-2"><span>📞</span> {personalInfo.phone}</div>}
-              {personalInfo.location && <div className="flex items-center gap-2"><span>📍</span> {personalInfo.location}</div>}
-              {personalInfo.website && <div className="flex items-center gap-2"><span>🌐</span> {personalInfo.website}</div>}
-            </div>
-          </div>
-        </header>
-      );
-    }
-
     if (template === 'monochrome') {
       return (
         <header className="mb-8 border-l-8 pl-6 py-2 break-inside-avoid" style={{ borderColor: '#000' }}>
-          <h1 className="text-5xl font-black uppercase tracking-tighter mb-1">{personalInfo.fullName}</h1>
-          <div className="text-2xl font-light text-gray-500 mb-4">{personalInfo.jobTitle}</div>
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+          <h1 className="text-5xl font-black uppercase tracking-tighter mb-1 break-words leading-tight">{personalInfo.fullName}</h1>
+          <div className="text-2xl font-light text-gray-500 mb-4 break-words">{personalInfo.jobTitle}</div>
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 break-words">
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
             {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -346,89 +258,19 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       );
     }
 
-    if (template === 'visionary') {
-      return (
-        <header className="mb-10 relative break-inside-avoid">
-          <div className="absolute -top-4 -left-4 w-24 h-24 border-t-4 border-l-4" style={{ borderColor: theme.accentColor }}></div>
-          <div className="pt-4 pl-4">
-            <h1 className="text-6xl font-black tracking-tighter leading-none mb-2" style={{ fontFamily: theme.headingFontFamily }}>
-              {personalInfo.fullName.split(' ').map((name, i) => (
-                <span key={i} className={i % 2 === 0 ? 'font-bold' : ''} style={i % 2 !== 0 ? { color: theme.accentColor } : {}}>{name} </span>
-              ))}
-            </h1>
-            <div className="text-xl font-bold tracking-[0.2em] uppercase text-gray-400 mb-6">{personalInfo.jobTitle}</div>
-            <div className="flex flex-col gap-1 text-xs font-medium text-gray-600">
-              {personalInfo.email && <span>{personalInfo.email}</span>}
-              {personalInfo.phone && <span>{personalInfo.phone}</span>}
-              {personalInfo.location && <span>{personalInfo.location}</span>}
-            </div>
-          </div>
-        </header>
-      );
-    }
-
-    if (template === 'alta-cv') {
-      return (
-        <header className="mb-6 break-inside-avoid">
-          <div className="flex justify-between items-center bg-gray-900 text-white p-6 -mx-8" style={{ backgroundColor: theme.accentColor }}>
-            <div className="flex-1">
-              <h1 className="text-4xl font-black uppercase tracking-widest leading-none mb-1">{personalInfo.fullName}</h1>
-              <div className="text-lg font-medium opacity-80 uppercase tracking-widest">{personalInfo.jobTitle}</div>
-            </div>
-            <div className="text-right text-[10px] space-y-1 opacity-90">
-              {personalInfo.email && <div className="flex items-center justify-end gap-2">{personalInfo.email} ✉</div>}
-              {personalInfo.phone && <div className="flex items-center justify-end gap-2">{personalInfo.phone} 📞</div>}
-              {personalInfo.location && <div className="flex items-center justify-end gap-2">{personalInfo.location} 📍</div>}
-            </div>
-          </div>
-        </header>
-      );
-    }
-
-    if (template === 'spark' || template === 'inspire') {
-      return (
-        <header className="mb-8 text-center break-inside-avoid">
-          <div className="inline-block px-8 py-4 border-4 border-double mb-4" style={{ borderColor: theme.accentColor }}>
-            <h1 className="text-4xl font-black uppercase tracking-tighter" style={{ fontFamily: theme.headingFontFamily }}>{personalInfo.fullName}</h1>
-          </div>
-          <div className="text-xl font-bold tracking-widest text-gray-400 uppercase mb-4">{personalInfo.jobTitle}</div>
-          <div className="flex justify-center gap-4 text-xs font-bold text-gray-500">
-            {personalInfo.email && <span className="px-2 py-0.5 bg-gray-100 rounded">{personalInfo.email}</span>}
-            {personalInfo.phone && <span className="px-2 py-0.5 bg-gray-100 rounded">{personalInfo.phone}</span>}
-            {personalInfo.location && <span className="px-2 py-0.5 bg-gray-100 rounded">{personalInfo.location}</span>}
-          </div>
-        </header>
-      );
-    }
-
     if (template === 'modern-cv') {
       return (
-        <header className="mb-8 flex justify-between items-end border-b-2 pb-4 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
-          <div>
-            <h1 className="text-5xl font-light tracking-tight" style={{ fontFamily: theme.headingFontFamily }}>
+        <header className="mb-8 flex justify-between items-end border-b-2 pb-4 gap-4 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-5xl font-light tracking-tight break-words leading-tight" style={{ fontFamily: theme.headingFontFamily }}>
               <span className="font-bold" style={{ color: theme.accentColor }}>{personalInfo.fullName.split(' ')[0]}</span> {personalInfo.fullName.split(' ').slice(1).join(' ')}
             </h1>
-            <div className="text-xl text-gray-500 mt-1">{personalInfo.jobTitle}</div>
+            <div className="text-xl text-gray-500 mt-1 break-words">{personalInfo.jobTitle}</div>
           </div>
-          <div className="text-right text-xs text-gray-400 space-y-1">
+          <div className="text-right text-xs text-gray-400 space-y-1 shrink-0">
             {personalInfo.email && <div>{personalInfo.email}</div>}
             {personalInfo.phone && <div>{personalInfo.phone}</div>}
             {personalInfo.location && <div>{personalInfo.location}</div>}
-          </div>
-        </header>
-      );
-    }
-
-    if (template === 'imprecv' || template === 'chicv' || template === 'minimalist-white-grey') {
-      return (
-        <header className="mb-10 break-inside-avoid">
-          <h1 className="text-4xl font-bold tracking-tight mb-2" style={{ fontFamily: theme.headingFontFamily }}>{personalInfo.fullName}</h1>
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <span className="font-medium" style={{ color: theme.accentColor }}>{personalInfo.jobTitle}</span>
-            <span className="text-gray-300">|</span>
-            {personalInfo.email && <span>{personalInfo.email}</span>}
-            {personalInfo.phone && <span>{personalInfo.phone}</span>}
-            {personalInfo.location && <span>{personalInfo.location}</span>}
           </div>
         </header>
       );
@@ -502,7 +344,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
                 </div>
               )}
               
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium" style={{ color: theme.accentColor }}>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium break-words" style={{ color: theme.accentColor }}>
                 {personalInfo.email && <span>{personalInfo.email}</span>}
                 {personalInfo.phone && <span>{personalInfo.phone}</span>}
                 {personalInfo.location && <span>{personalInfo.location}</span>}
@@ -519,7 +361,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-2 shrink-0">
             {personalInfo.profilePicture && (
               <img 
                 src={personalInfo.profilePicture} 
@@ -575,7 +417,7 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     );
   };
 
-  const isTwoColumn = ['deedy', 'alta-cv', 'plasmati'].includes(theme.template);
+  const isTwoColumn = ['deedy'].includes(theme.template);
 
   return (
     <div className="relative group pb-12">

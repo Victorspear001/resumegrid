@@ -137,47 +137,25 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
 
   const templates = [
     { 
-      category: 'Professional/Technical (LaTeX)',
+      category: 'Professional',
       items: [
         { id: 'awesome-cv', name: 'Awesome CV', description: 'Highly customizable, clean LaTeX style.' },
         { id: 'deedy', name: 'Deedy', description: 'Two-column, academic layout.' },
-        { id: 'alta-cv', name: 'Alta CV', description: 'Infographics-focused professional layout.' },
-        { id: 'plasmati', name: 'Plasmati', description: 'Academic and research oriented.' },
+        { id: 'executive', name: 'Executive', description: 'Traditional and professional corporate style.' },
       ]
     },
     {
-      category: 'Creative/Modern',
+      category: 'Modern & Creative',
       items: [
         { id: 'creative', name: 'Creative', description: 'Bold and modern, ideal for design and tech.' },
-        { id: 'calligraphic', name: 'Calligraphic', description: 'Elegant typography-focused design.' },
-        { id: 'pastel', name: 'Pastel', description: 'Soft colors and modern layout.' },
         { id: 'monochrome', name: 'Monochrome', description: 'Sleek black and white professional look.' },
-        { id: 'color-splash', name: 'Color Splash', description: 'Vibrant accents for a standout resume.' },
-        { id: 'visionary', name: 'Visionary', description: 'Forward-thinking, unique structure.' },
+        { id: 'modern-cv', name: 'Modern CV', description: 'Contemporary clean design.' },
       ]
     },
     {
-      category: 'Minimalist & Clean',
+      category: 'Minimalist',
       items: [
         { id: 'minimal', name: 'Minimal', description: 'Clean and simple, perfect for most industries.' },
-        { id: 'modern-cv', name: 'Modern-cv', description: 'Contemporary clean design.' },
-        { id: 'imprecv', name: 'Imprecv', description: 'Impressive minimalist structure.' },
-        { id: 'chicv', name: 'Chicv', description: 'Chic and professional minimalist look.' },
-        { id: 'minimalist-white-grey', name: 'Minimalist White & Grey', description: 'Subtle professional tones.' },
-      ]
-    },
-    {
-      category: 'Entry-Level/Recent Grads',
-      items: [
-        { id: 'spark', name: 'Spark', description: 'Energetic design for newcomers.' },
-        { id: 'inspire', name: 'Inspire', description: 'Inspirational layout for career starters.' },
-        { id: 'simple-design-freelancer', name: 'Freelancer', description: 'Simple design for independent workers.' },
-      ]
-    },
-    {
-      category: 'Classic',
-      items: [
-        { id: 'executive', name: 'Executive', description: 'Traditional and professional, great for corporate roles.' },
       ]
     }
   ] as const;
