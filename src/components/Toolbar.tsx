@@ -1,4 +1,4 @@
-import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon } from 'lucide-react';
+import { Download, LayoutTemplate, Maximize, Minimize, Settings, ChevronDown, FileText, Image as ImageIcon, Save, List } from 'lucide-react';
 import { useResumeStore } from '../store/useResumeStore';
 import { useState, useRef, useEffect } from 'react';
 import { toJpeg } from 'html-to-image';
@@ -7,10 +7,12 @@ import { jsPDF } from 'jspdf';
 interface ToolbarProps {
   isDistractionFree: boolean;
   setIsDistractionFree: (val: boolean) => void;
+  currentView: 'editor' | 'saved';
+  setCurrentView: (view: 'editor' | 'saved') => void;
 }
 
-export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProps) {
-  const { resumeId, data, updateTheme, loadData, setResumeId } = useResumeStore();
+export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, setCurrentView }: ToolbarProps) {
+  const { resumeId, data, updateTheme, loadData, setResumeId, isSaving, lastSaved } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   
@@ -166,107 +168,131 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree }: ToolbarProp
           RK
         </div>
         <h1 className="font-bold text-gray-200 tracking-tighter ml-1 text-lg neon-text-red">Resume Kill</h1>
+        
+        {currentView === 'editor' && (
+          <div className="ml-4 flex items-center text-xs text-gray-500">
+            {isSaving ? (
+              <span className="flex items-center gap-1"><Save size={12} className="animate-pulse" /> Saving...</span>
+            ) : lastSaved ? (
+              <span className="flex items-center gap-1"><Save size={12} /> Saved {lastSaved.toLocaleTimeString()}</span>
+            ) : null}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-3">
-        <button 
-          onClick={() => setIsDistractionFree(!isDistractionFree)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-blue hover:bg-gray-900 rounded-md transition-all duration-300"
-          title={isDistractionFree ? "Show Preview" : "Distraction Free Mode"}
+        <button
+          onClick={() => setCurrentView(currentView === 'editor' ? 'saved' : 'editor')}
+          className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${currentView === 'saved' ? 'bg-gray-900 text-neon-blue shadow-[0_0_10px_rgba(0,243,255,0.2)]' : 'text-gray-400 hover:text-neon-blue hover:bg-gray-900'}`}
         >
-          {isDistractionFree ? <Minimize size={16} /> : <Maximize size={16} />}
-          <span className="hidden sm:inline">{isDistractionFree ? "Split View" : "Focus Mode"}</span>
+          <List size={16} />
+          <span className="hidden sm:inline">{currentView === 'editor' ? 'Saved Resumes' : 'Editor'}</span>
         </button>
 
-        <div className="w-px h-6 bg-gray-800 mx-1"></div>
+        {currentView === 'editor' && (
+          <>
+            <div className="w-px h-6 bg-gray-800 mx-1"></div>
+            
+            <button 
+              onClick={() => setIsDistractionFree(!isDistractionFree)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-blue hover:bg-gray-900 rounded-md transition-all duration-300"
+              title={isDistractionFree ? "Show Preview" : "Distraction Free Mode"}
+            >
+              {isDistractionFree ? <Minimize size={16} /> : <Maximize size={16} />}
+              <span className="hidden sm:inline">{isDistractionFree ? "Split View" : "Focus Mode"}</span>
+            </button>
 
-        <div className="relative" ref={templatesRef}>
-          <button 
-            onClick={() => setShowTemplates(!showTemplates)}
-            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${showTemplates ? 'bg-gray-900 text-neon-blue shadow-[0_0_10px_rgba(0,243,255,0.2)]' : 'text-gray-400 hover:text-neon-blue hover:bg-gray-900'}`}
-          >
-            <LayoutTemplate size={16} />
-            <span className="hidden sm:inline">Templates</span>
-            <ChevronDown size={14} className={`transition-transform duration-300 ${showTemplates ? 'rotate-180' : ''}`} />
-          </button>
+            <div className="w-px h-6 bg-gray-800 mx-1"></div>
 
-          {showTemplates && (
-            <div className="absolute top-full right-0 mt-1 w-80 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="p-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                {templates.map((category) => (
-                  <div key={category.category} className="mb-4 last:mb-0">
-                    <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-1">
-                      {category.category}
-                    </div>
-                    {category.items.map((t) => (
-                      <button
-                        key={t.id}
-                        onClick={() => {
-                          updateTheme({ template: t.id as any });
-                          setShowTemplates(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 rounded-md transition-all duration-200 ${data.theme.template === t.id ? 'bg-gray-900 border-neon-blue/30 text-neon-blue' : 'hover:bg-gray-800 border-transparent text-gray-300'} border mb-1 last:mb-0`}
-                      >
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="font-semibold text-sm">{t.name}</span>
-                          {data.theme.template === t.id && (
-                            <span className="w-1.5 h-1.5 rounded-full bg-neon-blue shadow-[0_0_5px_rgba(0,243,255,1)]"></span>
-                          )}
+            <div className="relative" ref={templatesRef}>
+              <button 
+                onClick={() => setShowTemplates(!showTemplates)}
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ${showTemplates ? 'bg-gray-900 text-neon-blue shadow-[0_0_10px_rgba(0,243,255,0.2)]' : 'text-gray-400 hover:text-neon-blue hover:bg-gray-900'}`}
+              >
+                <LayoutTemplate size={16} />
+                <span className="hidden sm:inline">Templates</span>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${showTemplates ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showTemplates && (
+                <div className="absolute top-full right-0 mt-1 w-80 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="p-2 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                    {templates.map((category) => (
+                      <div key={category.category} className="mb-4 last:mb-0">
+                        <div className="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-1">
+                          {category.category}
                         </div>
-                        <div className="text-[10px] text-gray-500 line-clamp-1">{t.description}</div>
-                      </button>
+                        {category.items.map((t) => (
+                          <button
+                            key={t.id}
+                            onClick={() => {
+                              updateTheme({ template: t.id as any });
+                              setShowTemplates(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-md transition-all duration-200 ${data.theme.template === t.id ? 'bg-gray-900 border-neon-blue/30 text-neon-blue' : 'hover:bg-gray-800 border-transparent text-gray-300'} border mb-1 last:mb-0`}
+                          >
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="font-semibold text-sm">{t.name}</span>
+                              {data.theme.template === t.id && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-neon-blue shadow-[0_0_5px_rgba(0,243,255,1)]"></span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-gray-500 line-clamp-1">{t.description}</div>
+                          </button>
+                        ))}
+                      </div>
                     ))}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        
-        <button 
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-purple hover:bg-gray-900 rounded-md transition-all duration-300"
-          onClick={() => {
-            const themeSection = document.getElementById('theme-settings');
-            if (themeSection) {
-              themeSection.scrollIntoView({ behavior: 'smooth' });
-            }
-          }}
-        >
-          <Settings size={16} />
-          <span className="hidden sm:inline">Design</span>
-        </button>
+            
+            <button 
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-400 hover:text-neon-purple hover:bg-gray-900 rounded-md transition-all duration-300"
+              onClick={() => {
+                const themeSection = document.getElementById('theme-settings');
+                if (themeSection) {
+                  themeSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
+            >
+              <Settings size={16} />
+              <span className="hidden sm:inline">Design</span>
+            </button>
 
-        <div className="relative" ref={downloadMenuRef}>
-          <button 
-            onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-            className="flex items-center gap-2 px-4 py-1.5 text-sm font-bold text-gray-100 bg-[#005577] hover:bg-[#004466] rounded-md transition-all duration-300 ml-2 shadow-[0_0_10px_rgba(0,85,119,0.3)]"
-          >
-            <Download size={16} />
-            <span>Download</span>
-            <ChevronDown size={14} className={`transition-transform duration-300 ${showDownloadMenu ? 'rotate-180' : ''}`} />
-          </button>
+            <div className="relative" ref={downloadMenuRef}>
+              <button 
+                onClick={() => setShowDownloadMenu(!showDownloadMenu)}
+                className="flex items-center gap-2 px-4 py-1.5 text-sm font-bold text-gray-100 bg-[#005577] hover:bg-[#004466] rounded-md transition-all duration-300 ml-2 shadow-[0_0_10px_rgba(0,85,119,0.3)]"
+              >
+                <Download size={16} />
+                <span>Download</span>
+                <ChevronDown size={14} className={`transition-transform duration-300 ${showDownloadMenu ? 'rotate-180' : ''}`} />
+              </button>
 
-          {showDownloadMenu && (
-            <div className="absolute top-full right-0 mt-1 w-52 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="p-1">
-                <button
-                  onClick={handleDownloadPDF}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 group"
-                >
-                  <FileText size={16} className="text-neon-red group-hover:neon-text-red transition-all" />
-                  <span className="font-medium">Download as PDF</span>
-                </button>
-                <button
-                  onClick={handleDownloadJPG}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 group"
-                >
-                  <ImageIcon size={16} className="text-neon-blue group-hover:neon-text-blue transition-all" />
-                  <span className="font-medium">Download as JPG</span>
-                </button>
-              </div>
+              {showDownloadMenu && (
+                <div className="absolute top-full right-0 mt-1 w-52 bg-[#0a0a0a] rounded-lg shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-gray-800 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="p-1">
+                    <button
+                      onClick={handleDownloadPDF}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 group"
+                    >
+                      <FileText size={16} className="text-neon-red group-hover:neon-text-red transition-all" />
+                      <span className="font-medium">Download as PDF</span>
+                    </button>
+                    <button
+                      onClick={handleDownloadJPG}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-300 hover:bg-gray-900 rounded-md transition-all duration-200 group"
+                    >
+                      <ImageIcon size={16} className="text-neon-blue group-hover:neon-text-blue transition-all" />
+                      <span className="font-medium">Download as JPG</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
     </header>
   );

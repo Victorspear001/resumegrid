@@ -2,9 +2,21 @@ import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { ResumeData, Experience, Education, Project, SkillCategory, SectionType, ResumeTheme } from '../types/resume';
 
+// Get or create a user ID for the session
+const getUserId = () => {
+  let userId = localStorage.getItem('resume_user_id');
+  if (!userId) {
+    userId = uuidv4();
+    localStorage.setItem('resume_user_id', userId);
+  }
+  return userId;
+};
+
 interface ResumeState {
   resumeId: string;
   data: ResumeData;
+  isSaving: boolean;
+  lastSaved: Date | null;
   setResumeId: (id: string) => void;
   updatePersonalInfo: (data: Partial<ResumeData['personalInfo']>) => void;
   
@@ -38,6 +50,7 @@ interface ResumeState {
   
   // Load/Save
   loadData: (data: ResumeData) => void;
+  saveToDb: () => Promise<void>;
 }
 
 const initialData: ResumeData = {
@@ -123,172 +136,271 @@ const initialData: ResumeData = {
   }
 };
 
-export const useResumeStore = create<ResumeState>((set) => ({
+export const useResumeStore = create<ResumeState>((set, get) => ({
   resumeId: uuidv4(),
   data: initialData,
+  isSaving: false,
+  lastSaved: null,
   
   setResumeId: (id) => set({ resumeId: id }),
 
-  updatePersonalInfo: (info) => set((state) => ({
-    data: { ...state.data, personalInfo: { ...state.data.personalInfo, ...info } }
-  })),
+  updatePersonalInfo: (info) => {
+    set((state) => ({
+      data: { ...state.data, personalInfo: { ...state.data.personalInfo, ...info } }
+    }));
+    get().saveToDb();
+  },
   
   // Experience
-  addExperience: () => set((state) => ({
-    data: {
-      ...state.data,
-      experience: [
-        ...state.data.experience,
-        {
-          id: uuidv4(),
-          company: '',
-          position: '',
-          location: '',
-          startDate: '',
-          endDate: '',
-          current: false,
-          description: '',
-        }
-      ]
-    }
-  })),
-  updateExperience: (id, expData) => set((state) => ({
-    data: {
-      ...state.data,
-      experience: state.data.experience.map((exp) => exp.id === id ? { ...exp, ...expData } : exp)
-    }
-  })),
-  removeExperience: (id) => set((state) => ({
-    data: {
-      ...state.data,
-      experience: state.data.experience.filter((exp) => exp.id !== id)
-    }
-  })),
-  reorderExperience: (startIndex, endIndex) => set((state) => {
-    const newExp = Array.from(state.data.experience);
-    const [removed] = newExp.splice(startIndex, 1);
-    newExp.splice(endIndex, 0, removed);
-    return { data: { ...state.data, experience: newExp } };
-  }),
+  addExperience: () => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        experience: [
+          ...state.data.experience,
+          {
+            id: uuidv4(),
+            company: '',
+            position: '',
+            location: '',
+            startDate: '',
+            endDate: '',
+            current: false,
+            description: '',
+          }
+        ]
+      }
+    }));
+    get().saveToDb();
+  },
+  updateExperience: (id, expData) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        experience: state.data.experience.map((exp) => exp.id === id ? { ...exp, ...expData } : exp)
+      }
+    }));
+    get().saveToDb();
+  },
+  removeExperience: (id) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        experience: state.data.experience.filter((exp) => exp.id !== id)
+      }
+    }));
+    get().saveToDb();
+  },
+  reorderExperience: (startIndex, endIndex) => {
+    set((state) => {
+      const newExp = Array.from(state.data.experience);
+      const [removed] = newExp.splice(startIndex, 1);
+      newExp.splice(endIndex, 0, removed);
+      return { data: { ...state.data, experience: newExp } };
+    });
+    get().saveToDb();
+  },
   
   // Education
-  addEducation: () => set((state) => ({
-    data: {
-      ...state.data,
-      education: [
-        ...state.data.education,
-        {
-          id: uuidv4(),
-          institution: '',
-          degree: '',
-          fieldOfStudy: '',
-          location: '',
-          startDate: '',
-          endDate: '',
-          percentage: '',
-          description: '',
-        }
-      ]
-    }
-  })),
-  updateEducation: (id, eduData) => set((state) => ({
-    data: {
-      ...state.data,
-      education: state.data.education.map((edu) => edu.id === id ? { ...edu, ...eduData } : edu)
-    }
-  })),
-  removeEducation: (id) => set((state) => ({
-    data: {
-      ...state.data,
-      education: state.data.education.filter((edu) => edu.id !== id)
-    }
-  })),
-  reorderEducation: (startIndex, endIndex) => set((state) => {
-    const newEdu = Array.from(state.data.education);
-    const [removed] = newEdu.splice(startIndex, 1);
-    newEdu.splice(endIndex, 0, removed);
-    return { data: { ...state.data, education: newEdu } };
-  }),
+  addEducation: () => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        education: [
+          ...state.data.education,
+          {
+            id: uuidv4(),
+            institution: '',
+            degree: '',
+            fieldOfStudy: '',
+            location: '',
+            startDate: '',
+            endDate: '',
+            percentage: '',
+            description: '',
+          }
+        ]
+      }
+    }));
+    get().saveToDb();
+  },
+  updateEducation: (id, eduData) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        education: state.data.education.map((edu) => edu.id === id ? { ...edu, ...eduData } : edu)
+      }
+    }));
+    get().saveToDb();
+  },
+  removeEducation: (id) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        education: state.data.education.filter((edu) => edu.id !== id)
+      }
+    }));
+    get().saveToDb();
+  },
+  reorderEducation: (startIndex, endIndex) => {
+    set((state) => {
+      const newEdu = Array.from(state.data.education);
+      const [removed] = newEdu.splice(startIndex, 1);
+      newEdu.splice(endIndex, 0, removed);
+      return { data: { ...state.data, education: newEdu } };
+    });
+    get().saveToDb();
+  },
   
   // Projects
-  addProject: () => set((state) => ({
-    data: {
-      ...state.data,
-      projects: [
-        ...state.data.projects,
-        {
-          id: uuidv4(),
-          name: '',
-          description: '',
-          url: '',
-          technologies: [],
-          highlights: '',
-        }
-      ]
-    }
-  })),
-  updateProject: (id, projData) => set((state) => ({
-    data: {
-      ...state.data,
-      projects: state.data.projects.map((proj) => proj.id === id ? { ...proj, ...projData } : proj)
-    }
-  })),
-  removeProject: (id) => set((state) => ({
-    data: {
-      ...state.data,
-      projects: state.data.projects.filter((proj) => proj.id !== id)
-    }
-  })),
-  reorderProjects: (startIndex, endIndex) => set((state) => {
-    const newProj = Array.from(state.data.projects);
-    const [removed] = newProj.splice(startIndex, 1);
-    newProj.splice(endIndex, 0, removed);
-    return { data: { ...state.data, projects: newProj } };
-  }),
+  addProject: () => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        projects: [
+          ...state.data.projects,
+          {
+            id: uuidv4(),
+            name: '',
+            description: '',
+            url: '',
+            technologies: [],
+            highlights: '',
+          }
+        ]
+      }
+    }));
+    get().saveToDb();
+  },
+  updateProject: (id, projData) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        projects: state.data.projects.map((proj) => proj.id === id ? { ...proj, ...projData } : proj)
+      }
+    }));
+    get().saveToDb();
+  },
+  removeProject: (id) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        projects: state.data.projects.filter((proj) => proj.id !== id)
+      }
+    }));
+    get().saveToDb();
+  },
+  reorderProjects: (startIndex, endIndex) => {
+    set((state) => {
+      const newProj = Array.from(state.data.projects);
+      const [removed] = newProj.splice(startIndex, 1);
+      newProj.splice(endIndex, 0, removed);
+      return { data: { ...state.data, projects: newProj } };
+    });
+    get().saveToDb();
+  },
   
   // Skills
-  addSkillCategory: () => set((state) => ({
-    data: {
-      ...state.data,
-      skills: [
-        ...state.data.skills,
-        {
-          id: uuidv4(),
-          name: '',
-          skills: [],
-        }
-      ]
-    }
-  })),
-  updateSkillCategory: (id, skillData) => set((state) => ({
-    data: {
-      ...state.data,
-      skills: state.data.skills.map((skill) => skill.id === id ? { ...skill, ...skillData } : skill)
-    }
-  })),
-  removeSkillCategory: (id) => set((state) => ({
-    data: {
-      ...state.data,
-      skills: state.data.skills.filter((skill) => skill.id !== id)
-    }
-  })),
-  reorderSkillCategories: (startIndex, endIndex) => set((state) => {
-    const newSkills = Array.from(state.data.skills);
-    const [removed] = newSkills.splice(startIndex, 1);
-    newSkills.splice(endIndex, 0, removed);
-    return { data: { ...state.data, skills: newSkills } };
-  }),
+  addSkillCategory: () => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        skills: [
+          ...state.data.skills,
+          {
+            id: uuidv4(),
+            name: '',
+            skills: [],
+          }
+        ]
+      }
+    }));
+    get().saveToDb();
+  },
+  updateSkillCategory: (id, skillData) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        skills: state.data.skills.map((skill) => skill.id === id ? { ...skill, ...skillData } : skill)
+      }
+    }));
+    get().saveToDb();
+  },
+  removeSkillCategory: (id) => {
+    set((state) => ({
+      data: {
+        ...state.data,
+        skills: state.data.skills.filter((skill) => skill.id !== id)
+      }
+    }));
+    get().saveToDb();
+  },
+  reorderSkillCategories: (startIndex, endIndex) => {
+    set((state) => {
+      const newSkills = Array.from(state.data.skills);
+      const [removed] = newSkills.splice(startIndex, 1);
+      newSkills.splice(endIndex, 0, removed);
+      return { data: { ...state.data, skills: newSkills } };
+    });
+    get().saveToDb();
+  },
   
   // Theme & Layout
-  updateTheme: (theme) => set((state) => ({
-    data: { ...state.data, theme: { ...state.data.theme, ...theme } }
-  })),
-  reorderSections: (startIndex, endIndex) => set((state) => {
-    const newOrder = Array.from(state.data.sectionOrder);
-    const [removed] = newOrder.splice(startIndex, 1);
-    newOrder.splice(endIndex, 0, removed);
-    return { data: { ...state.data, sectionOrder: newOrder } };
-  }),
+  updateTheme: (theme) => {
+    set((state) => ({
+      data: { ...state.data, theme: { ...state.data.theme, ...theme } }
+    }));
+    get().saveToDb();
+  },
+  reorderSections: (startIndex, endIndex) => {
+    set((state) => {
+      const newOrder = Array.from(state.data.sectionOrder);
+      const [removed] = newOrder.splice(startIndex, 1);
+      newOrder.splice(endIndex, 0, removed);
+      return { data: { ...state.data, sectionOrder: newOrder } };
+    });
+    get().saveToDb();
+  },
   
   loadData: (data) => set({ data }),
+
+  saveToDb: async () => {
+    const state = get();
+    
+    // Simple debounce
+    if ((window as any)._saveTimeout) {
+      clearTimeout((window as any)._saveTimeout);
+    }
+    
+    (window as any)._saveTimeout = setTimeout(async () => {
+      const currentState = get();
+      if (currentState.isSaving) return;
+      
+      set({ isSaving: true });
+      
+      try {
+        const userId = getUserId();
+        const title = currentState.data.personalInfo.fullName ? `${currentState.data.personalInfo.fullName}'s Resume` : "Untitled Resume";
+        
+        await fetch('/api/resumes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: currentState.resumeId,
+            userId,
+            title,
+            data: currentState.data
+          }),
+        });
+        
+        set({ lastSaved: new Date() });
+      } catch (error) {
+        console.error('Failed to save resume:', error);
+      } finally {
+        set({ isSaving: false });
+      }
+    }, 1000);
+  }
 }));
