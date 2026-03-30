@@ -16,6 +16,8 @@ export function SavedResumes({ onEdit }: { onEdit: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const { loadData, setResumeId } = useResumeStore();
 
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
   const getUserId = () => {
     let userId = localStorage.getItem('resume_user_id');
     if (!userId) {
@@ -34,7 +36,12 @@ export function SavedResumes({ onEdit }: { onEdit: () => void }) {
       if (!response.ok) {
         throw new Error('Failed to fetch resumes');
       }
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error('Server returned an invalid response. Please try again.');
+      }
       setResumes(data);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
@@ -54,20 +61,29 @@ export function SavedResumes({ onEdit }: { onEdit: () => void }) {
       if (!response.ok) {
         throw new Error('Failed to fetch resume data');
       }
-      const data = await response.json();
-      const parsedData = JSON.parse(data.data);
+      let data;
+      try {
+        data = await response.json();
+      } catch (e) {
+        throw new Error('Server returned an invalid response. Please try again.');
+      }
+      
+      let parsedData;
+      try {
+        parsedData = JSON.parse(data.data);
+      } catch (e) {
+        throw new Error('Resume data is corrupted.');
+      }
       loadData(parsedData);
       setResumeId(resume.id);
       onEdit();
     } catch (err) {
       console.error('Failed to load resume data:', err);
-      alert('Failed to load resume data. It might be corrupted.');
+      setError('Failed to load resume data. It might be corrupted.');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this resume?')) return;
-    
     try {
       const userId = getUserId();
       const response = await fetch(`/api/resumes/${id}?userId=${userId}`, {
@@ -79,8 +95,10 @@ export function SavedResumes({ onEdit }: { onEdit: () => void }) {
       }
       
       setResumes(resumes.filter(r => r.id !== id));
+      setDeleteConfirmId(null);
     } catch (err: any) {
-      alert(err.message || 'Failed to delete resume');
+      setError(err.message || 'Failed to delete resume');
+      setDeleteConfirmId(null);
     }
   };
 
@@ -180,13 +198,30 @@ export function SavedResumes({ onEdit }: { onEdit: () => void }) {
                       Edit
                     </button>
                     <div className="w-px h-6 bg-gray-800 mx-2"></div>
-                    <button
-                      onClick={() => handleDelete(resume.id)}
-                      className="p-2 text-gray-500 hover:text-neon-red hover:bg-red-900/20 rounded-md transition-colors"
-                      title="Delete Resume"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {deleteConfirmId === resume.id ? (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleDelete(resume.id)}
+                          className="px-3 py-1 text-xs font-medium bg-red-900/40 text-red-400 hover:bg-red-900/60 hover:text-red-300 rounded transition-colors"
+                        >
+                          Confirm
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirmId(null)}
+                          className="px-3 py-1 text-xs font-medium bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white rounded transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirmId(resume.id)}
+                        className="p-2 text-gray-500 hover:text-neon-red hover:bg-red-900/20 rounded-md transition-colors"
+                        title="Delete Resume"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );

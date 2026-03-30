@@ -15,6 +15,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, 
   const { resumeId, data, updateTheme, loadData, setResumeId, isSaving, lastSaved } = useResumeStore();
   const [showTemplates, setShowTemplates] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   
   const templatesRef = useRef<HTMLDivElement>(null);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
@@ -89,6 +90,7 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, 
 
   const handleDownloadPDF = async () => {
     setShowDownloadMenu(false);
+    setErrorMsg(null);
     
     try {
       const { dataUrl, width, height } = await generateImage();
@@ -108,12 +110,14 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, 
       pdf.save(`${data.personalInfo.fullName || 'Resume'}.pdf`);
     } catch (error: any) {
       console.error('Error generating PDF:', error);
-      alert(`Failed to generate PDF: ${error.message || 'Unknown error'}`);
+      setErrorMsg(`Failed to generate PDF: ${error.message || 'Unknown error'}`);
+      setTimeout(() => setErrorMsg(null), 5000);
     }
   };
 
   const handleDownloadJPG = async () => {
     setShowDownloadMenu(false);
+    setErrorMsg(null);
     
     try {
       const { dataUrl } = await generateImage();
@@ -123,7 +127,8 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, 
       link.click();
     } catch (error: any) {
       console.error('Error generating JPG:', error);
-      alert(`Failed to generate JPG: ${error.message || 'Unknown error'}`);
+      setErrorMsg(`Failed to generate JPG: ${error.message || 'Unknown error'}`);
+      setTimeout(() => setErrorMsg(null), 5000);
     }
   };
 
@@ -166,6 +171,9 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, 
             ) : lastSaved ? (
               <span className="flex items-center gap-1"><Save size={12} /> Saved {lastSaved.toLocaleTimeString()}</span>
             ) : null}
+            {errorMsg && (
+              <span className="ml-4 text-red-400 font-medium">{errorMsg}</span>
+            )}
           </div>
         )}
       </div>

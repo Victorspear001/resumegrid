@@ -4,7 +4,7 @@ import path from "path";
 import { createClient } from "@libsql/client";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const dbUrl = process.env.TURSO_DATABASE_URL;
 const dbAuthToken = process.env.TURSO_AUTH_TOKEN;
@@ -47,6 +47,14 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json({ limit: '50mb' }));
+
+  app.get("/api/debug", (req, res) => {
+    res.json({
+      url: process.env.TURSO_DATABASE_URL,
+      token: process.env.TURSO_AUTH_TOKEN?.slice(-10),
+      tursoIsNull: turso === null
+    });
+  });
 
   // API Routes
   app.get("/api/resumes", async (req, res) => {
