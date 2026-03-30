@@ -60,8 +60,6 @@ export interface ResumeTheme {
   template: 
     | 'minimal' | 'executive' | 'creative'
     | 'awesome-cv' | 'monochrome' | 'modern-cv';
-  margin: number; // in mm
-  lineHeight: number; // multiplier
 }
 
 export interface ResumeData {

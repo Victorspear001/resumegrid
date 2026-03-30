@@ -92,28 +92,18 @@ export function Toolbar({ isDistractionFree, setIsDistractionFree, currentView, 
     
     try {
       const { dataUrl, width, height } = await generateImage();
+      
+      // Calculate height in mm based on A4 width (210mm)
+      const pdfWidth = 210;
+      const pdfHeight = (height * pdfWidth) / width;
+      
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
+        format: [pdfWidth, pdfHeight],
       });
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const pdfHeight = (height * pdfWidth) / width;
-      
-      let position = 0;
-      let heightLeft = pdfHeight;
-      
-      pdf.addImage(dataUrl, 'JPEG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
-      
-      while (heightLeft > 1) { // 1mm tolerance to prevent blank pages
-        position = position - pageHeight;
-        pdf.addPage();
-        pdf.addImage(dataUrl, 'JPEG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
-      }
+      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       
       pdf.save(`${data.personalInfo.fullName || 'Resume'}.pdf`);
     } catch (error: any) {

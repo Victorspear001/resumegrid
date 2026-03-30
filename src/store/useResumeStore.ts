@@ -131,8 +131,6 @@ const initialData: ResumeData = {
     headingFontFamily: 'Inter',
     spacing: 'normal',
     template: 'minimal',
-    margin: 16,
-    lineHeight: 1.4,
   }
 };
 

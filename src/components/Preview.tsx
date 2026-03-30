@@ -6,6 +6,7 @@ export function Preview() {
   const componentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [contentHeight, setContentHeight] = useState(1122); // Default A4 height in px at 96dpi
 
   // Auto-scale to fit container
   useEffect(() => {
@@ -28,6 +29,20 @@ export function Preview() {
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Track content height for proper scrolling with transform: scale
+  useEffect(() => {
+    if (!componentRef.current) return;
+    
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContentHeight(entry.contentRect.height);
+      }
+    });
+    
+    observer.observe(componentRef.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -64,17 +79,30 @@ export function Preview() {
       {/* Preview Container */}
       <div 
         ref={containerRef}
-        className="flex-1 overflow-auto flex justify-center items-start p-8"
+        className="flex-1 overflow-auto p-8"
       >
-        <div 
-          style={{ 
-            transform: `scale(${scale})`, 
-            transformOrigin: 'top center',
-            transition: 'transform 0.2s ease-out',
-            width: '210mm',
-          }}
-        >
-          <ResumeTemplate ref={componentRef} />
+        <div className="flex justify-center min-h-full">
+          <div 
+            style={{ 
+              width: 794 * scale, // 210mm in px * scale
+              height: contentHeight * scale,
+              position: 'relative',
+            }}
+          >
+            <div 
+              style={{ 
+                transform: `scale(${scale})`, 
+                transformOrigin: 'top left',
+                transition: 'transform 0.2s ease-out',
+                width: '210mm',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }}
+            >
+              <ResumeTemplate ref={componentRef} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

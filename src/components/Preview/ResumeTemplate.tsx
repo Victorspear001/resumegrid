@@ -195,11 +195,11 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (template === 'awesome-cv') {
       return (
         <header className="text-center mb-6 break-inside-avoid">
-          <h1 className="text-4xl font-light tracking-tight mb-2 break-words leading-tight" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
+          <h1 className="text-3xl font-light tracking-tight mb-2 break-words leading-tight" style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}>
             <span className="font-bold">{personalInfo.fullName.split(' ')[0]}</span> {personalInfo.fullName.split(' ').slice(1).join(' ')}
           </h1>
           {personalInfo.jobTitle && (
-            <div className="text-lg font-medium uppercase tracking-widest mb-3 break-words" style={{ color: theme.accentColor }}>
+            <div className="text-base font-medium uppercase tracking-widest mb-3 break-words" style={{ color: theme.accentColor }}>
               {personalInfo.jobTitle}
             </div>
           )}
@@ -217,8 +217,8 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
     if (template === 'monochrome') {
       return (
         <header className="mb-8 border-l-8 pl-6 py-2 break-inside-avoid" style={{ borderColor: '#000' }}>
-          <h1 className="text-5xl font-black uppercase tracking-tighter mb-1 break-words leading-tight">{personalInfo.fullName}</h1>
-          <div className="text-2xl font-light text-gray-500 mb-4 break-words">{personalInfo.jobTitle}</div>
+          <h1 className="text-4xl font-black uppercase tracking-tighter mb-1 break-words leading-tight">{personalInfo.fullName}</h1>
+          <div className="text-xl font-light text-gray-500 mb-4 break-words">{personalInfo.jobTitle}</div>
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 break-words">
             {personalInfo.email && <span>{personalInfo.email}</span>}
             {personalInfo.phone && <span>{personalInfo.phone}</span>}
@@ -233,10 +233,10 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
       return (
         <header className="mb-8 flex justify-between items-end border-b-2 pb-4 gap-4 break-inside-avoid" style={{ borderColor: theme.accentColor }}>
           <div className="min-w-0 flex-1">
-            <h1 className="text-5xl font-light tracking-tight break-words leading-tight" style={{ fontFamily: theme.headingFontFamily }}>
+            <h1 className="text-4xl font-light tracking-tight break-words leading-tight" style={{ fontFamily: theme.headingFontFamily }}>
               <span className="font-bold" style={{ color: theme.accentColor }}>{personalInfo.fullName.split(' ')[0]}</span> {personalInfo.fullName.split(' ').slice(1).join(' ')}
             </h1>
-            <div className="text-xl text-gray-500 mt-1 break-words">{personalInfo.jobTitle}</div>
+            <div className="text-lg text-gray-500 mt-1 break-words">{personalInfo.jobTitle}</div>
           </div>
           <div className="text-right text-xs text-gray-400 space-y-1 shrink-0">
             {personalInfo.email && <div>{personalInfo.email}</div>}
@@ -304,13 +304,13 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
             <div className="w-3 shrink-0 mr-4" style={{ backgroundColor: theme.accentColor }}></div>
             <div className="py-1 flex-1 min-w-0">
               <h1 
-                className="text-4xl font-black mb-1 tracking-tighter break-words leading-tight"
+                className="text-3xl font-black mb-1 tracking-tighter break-words leading-tight"
                 style={{ fontFamily: theme.headingFontFamily, color: theme.headingColor }}
               >
                 {personalInfo.fullName}
               </h1>
               {personalInfo.jobTitle && (
-                <div className="text-xl font-light mb-2 opacity-80 break-words">
+                <div className="text-lg font-light mb-2 opacity-80 break-words">
                   {personalInfo.jobTitle}
                 </div>
               )}
@@ -406,8 +406,8 @@ export const ResumeTemplate = forwardRef<HTMLDivElement>((props, ref) => {
         <div 
           className="w-full min-h-full break-words"
           style={{ 
-            padding: '15mm',
-            lineHeight: 1.5,
+            padding: '20mm',
+            lineHeight: 1.3,
             color: theme.textColor,
             boxSizing: 'border-box',
           }}
